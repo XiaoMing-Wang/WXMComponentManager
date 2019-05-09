@@ -75,22 +75,27 @@
 }
 
 /** 发送消息 spe发射频段 */
-- (void)sendEventType:(NSString *)eventType eventObj:(id)eventObj {
-    
+- (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj {
     [self.registeredDic enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *obj, BOOL *stop) {
         Class class = NSClassFromString(obj);
-        SEL sel = NSSelectorFromString(@"events");
+        SEL sel = NSSelectorFromString(@"modules");
+        SEL selEvents = NSSelectorFromString(@"events");
         
         BOOL respon = YES;
         if ([class respondsToSelector:sel]) {
-            NSString *typeHeader = [eventType componentsSeparatedByString:@":"].firstObject;
             NSArray * array = [class performSelector:sel];
-            respon = [array containsObject:typeHeader];
+            respon = [array containsObject:module];
         }
         
-        SEL selRespond = NSSelectorFromString(@"providedType:event:");
+        if ([class respondsToSelector:selEvents]) {
+            NSArray * arrayEvents = [class performSelector:selEvents];
+            respon = [arrayEvents containsObject:@(event).stringValue];
+        }
+        
+        NSString * module_event = [NSString stringWithFormat:@"%@:%zd",module,event];
+        SEL selRespond = NSSelectorFromString(@"providedEventModule_event:eventObj:");
         if (respon && [class respondsToSelector:selRespond]) {
-            [class performSelector:selRespond withObject:eventType withObject:eventObj];
+            [class performSelector:selRespond withObject:module_event withObject:eventObj];
         }
     }];
 }

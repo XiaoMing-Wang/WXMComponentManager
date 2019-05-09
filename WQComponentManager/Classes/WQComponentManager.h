@@ -21,9 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)serviceProvideForProtocol:(Protocol *)protocol;
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
 
-/** test */
-/** 发送消息 spe发射频段 */
-- (void)sendEventType:(NSString *)eventType eventObj:(id)eventObj;
+/** 发送消息 module模块类 event事件 */
+- (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj;
 
 @end
 NS_ASSUME_NONNULL_END

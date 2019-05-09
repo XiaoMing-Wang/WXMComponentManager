@@ -42,9 +42,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
             [self.currentNavigationController pushViewController:vc animated:YES];
         } else if ([scheme isEqualToString:@"present"]) {
             [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
-        } else if ([scheme isEqualToString:@""]) {
-            
-        }
+        } else if ([scheme isEqualToString:@""]) { }
     }
 }
 - (void)openUrl:(NSString *)url {
@@ -100,7 +98,9 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         SEL selSuffix = NSSelectorFromString([action stringByAppendingString:@":"]);
         SEL selReal = [service respondsToSelector:sel] ? sel : selSuffix;
         if (!service | !sel | ![service respondsToSelector:selReal]) {
-            NSLog(@"无法生成service类 或 action函数 或 无法响应");
+           if (!service) NSLog(@"无法生成service类");
+           if (!sel) NSLog(@"无法生成action函数");
+           if (![service respondsToSelector:selReal]) NSLog(@"service无法无法响应这个函数");
             return nil;
         }
         
