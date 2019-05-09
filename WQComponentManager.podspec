@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "WQComponentManager" 
-  s.version      = "0.0.2"        
+  s.version      = "1.2.0"        
   s.license      = "MIT"
   s.summary      = "键盘自动收起"
 
