@@ -15,13 +15,13 @@
 #import <objc/message.h>
 #include <mach-o/ldsyms.h>
 #import "WQComponentHeader.h"
+#import "WXMGeneralMacros.h"
 
 @interface WQComponentManager ()
 
 /** 协议和实例 */
 @property (nonatomic) NSDictionary<NSString *,id> *registeredDic;
 @property (nonatomic) NSDictionary<NSString *,id> *cacheTarget;
-
 @end
 
 @implementation WQComponentManager
@@ -39,7 +39,7 @@
 }
 
 /* 注册service 和 protocol */
-- (void)addService:(id)service protocol:(NSString *)protocol {
+- (void)addService:(NSString *)service protocol:(NSString *)protocol {
     if (!self.registeredDic) self.registeredDic = @{}.mutableCopy;
     if (!self.cacheTarget) self.cacheTarget = @{}.mutableCopy;
     [self.registeredDic setValue:service forKey:protocol];
@@ -73,6 +73,7 @@
     }
     return nil;
 }
+
 /** 发送消息 spe发射频段 */
 - (void)sendEventType:(NSString *)eventType eventObj:(id)eventObj {
     

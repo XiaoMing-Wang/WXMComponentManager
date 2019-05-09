@@ -50,16 +50,19 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
 
 /** 注册组件 */
 + (void)load {
-    NSArray * array = WQReadConfiguration(WXMKitSerName);
-    [array enumerateObjectsUsingBlock:^(NSString* _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary * dictionary = [self jsonToDictionary:obj];
-        if (![dictionary isKindOfClass:NSDictionary.class]) return;
-        
-        NSString *protocol = dictionary.allKeys.firstObject;
-        NSString *service = dictionary.allValues.firstObject;
-        [WQCPManger addService:service protocol:protocol]; /** 注册组件 */
-    }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSArray * array = WQReadConfiguration(WXMKitSerName);
+        [array enumerateObjectsUsingBlock:^(NSString* _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary * dictionary = [self jsonToDictionary:obj];
+            if (![dictionary isKindOfClass:NSDictionary.class]) return;
+            
+            NSString *protocol = dictionary.allKeys.firstObject;
+            NSString *service = dictionary.allValues.firstObject;
+            [WXMCPManger addService:service protocol:protocol]; /** 注册组件 */
+        }];
+    });
 }
+
 /** json字符串转字典 */
 + (NSDictionary *)jsonToDictionary:(NSString *)string {
     NSData *jsonData = [string dataUsingEncoding:NSUTF8StringEncoding];

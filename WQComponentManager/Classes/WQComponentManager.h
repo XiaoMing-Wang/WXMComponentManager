@@ -15,13 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 /* 注册service 和 protocol */
-- (void)addService:(id)target protocol:(NSString *)protocol;
+- (void)addService:(NSString *)target protocol:(NSString *)protocol;
 
 /* 获取service对象(服务调用者) */
 - (id)serviceProvideForProtocol:(Protocol *)protocol;
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
 
+/** test */
 /** 发送消息 spe发射频段 */
 - (void)sendEventType:(NSString *)eventType eventObj:(id)eventObj;
+
 @end
 NS_ASSUME_NONNULL_END
