@@ -15,7 +15,6 @@
 #import <objc/message.h>
 #include <mach-o/ldsyms.h>
 #import "WQComponentHeader.h"
-//#import "WXMGeneralMacros.h"
 
 @interface WQComponentManager ()
 

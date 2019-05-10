@@ -51,8 +51,11 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (void)openUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
     [self openUrl:url passObj:params routerType:WXMRouterTypeJump];
 }
-- (void)openUrl:(NSString * _Nonnull)url feedback:(Feedback _Nullable)feedback {
-    [self openUrl:url passObj:feedback routerType:WXMRouterTypeJump];
+- (void)openUrl:(NSString * _Nonnull)url event_id:(void (^)(id obj))event {
+    [self openUrl:url passObj:event routerType:WXMRouterTypeJump];
+}
+- (void)openUrl:(NSString * _Nonnull)url event_map:(void (^)(NSDictionary * obj))event {
+    [self openUrl:url passObj:event routerType:WXMRouterTypeJump];
 }
 
 /** 返回结果 id 或者 viewcontroller */
@@ -62,10 +65,12 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (id)resultsOpenUrl:(NSString * _Nonnull)url params:(NSDictionary * _Nullable)params {
     return [self openUrl:url passObj:params routerType:WXMRouterTypeParameter];
 }
-- (id)resultsOpenUrl:(NSString * _Nonnull)url feedback:(Feedback _Nullable)feedback {
-    return [self openUrl:url passObj:feedback routerType:WXMRouterTypeParameter];
+- (id)resultsOpenUrl:(NSString * _Nonnull)url event_id:(void (^)(id obj))event {
+    return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
 }
-
+- (id)resultsOpenUrl:(NSString * _Nonnull)url event_map:(void (^)(NSDictionary * obj))event {
+    return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
+}
 /** 根判断 */
 - (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
