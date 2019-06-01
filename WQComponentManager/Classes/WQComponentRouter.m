@@ -8,6 +8,8 @@
 
 #import "WQComponentRouter.h"
 #import "WQComponentManager.h"
+#import <objc/runtime.h>
+
 typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeWhether = 0,
     WXMRouterTypeParameter = 1,
@@ -58,7 +60,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     [self openUrl:url passObj:event routerType:WXMRouterTypeJump];
 }
 
-/** 返回结果 id 或者 viewcontroller */
+/** 返回结果 一般返回controller(模块实现类实现协议方法) */
 - (id)resultsOpenUrl:(NSString * _Nonnull)url {
     return [self openUrl:url passObj:nil routerType:WXMRouterTypeParameter];
 }
@@ -71,6 +73,33 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (id)resultsOpenUrl:(NSString * _Nonnull)url event_map:(void (^)(NSDictionary * obj))event {
     return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
 }
+
+/** 不需实现协议 需controller作为实现协议对象 */
+- (UIViewController *)viewControllerWithUrl:(NSString *)url {
+    return [self viewControllerWithUrl:url params:nil];
+}
+- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+    NSURL *urlUrl = [NSURL URLWithString:url];
+    NSString *scheme = urlUrl.scheme;             /** 操作类型 */
+    NSString *host = urlUrl.host;                 /** 第一路径 */
+    if (!scheme || !host || ![scheme isEqualToString:@"component"]) {
+        NSLog(@"不是正确的url");
+        return nil;
+    }
+    
+    NSString *protocol = [self protocol:host];
+    Protocol *pro = NSProtocolFromString(protocol);
+    if (pro == nil) {
+        NSLog(@"url解析不出protocol");
+        return nil;
+    }
+    UIViewController *vc = [[WQComponentManager sharedInstance] serviceProvideForProtocol:pro];
+    if (params && vc) {
+        objc_setAssociatedObject(self, @"component", params, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    }
+    return vc;
+}
+
 /** 根判断 */
 - (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
@@ -80,8 +109,11 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         NSString *host = urlUrl.host;                 /** 第一路径 */
         NSString *relativePath = urlUrl.relativePath; /** 真实子路径 */
         NSString *query = urlUrl.query; /** 参数 */
-        if (!relativePath || !urlUrl || !host || !scheme) { NSLog(@"不是正确的url");}
-        if (!relativePath || !urlUrl || !host || !scheme) return nil;
+        if (!relativePath || !urlUrl || !host || !scheme) {
+            NSLog(@"不是正确的url");
+            return nil;
+        }
+        
         
         /** 判断传递参数是什么类型 */
         id parameter = nil;
@@ -93,9 +125,11 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         /** 剪切参数获取字符串 */
         NSString *protocol = [self protocol:host];
         NSString *action = [self action:relativePath];
-        if (!protocol || !action) { NSLog(@"url解析不出protocol或action");}
-        if (!protocol || !action) return nil;
-   
+        if (!protocol || !action) {
+            NSLog(@"url解析不出protocol或action");
+            return nil;
+        }
+          
         /** 获取service */
         Protocol *pro = NSProtocolFromString(protocol);
         id service = [[WQComponentManager sharedInstance] serviceProvideForProtocol:pro];
@@ -155,7 +189,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     return [relativePath stringByReplacingOccurrencesOfString:@"/" withString:@""];
 }
 
-/** 获取当前导航栏 */
+/** 获取当前导航控制器 */
 - (UINavigationController *)currentNavigationController {
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     UIViewController *rootVC = window.rootViewController;
@@ -170,7 +204,6 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         return (UINavigationController *)rootVC;
     }
     
-    /** 判断一波 */
     return nil;
 }
 

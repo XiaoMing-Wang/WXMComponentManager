@@ -44,6 +44,7 @@
     [self.registeredDic setValue:service forKey:protocol];
     NSLog(@"%@ ----- %@",service,protocol);
 }
+
 /* 获取service对象(服务调用者) */
 - (id)serviceProvideForProtocol:(Protocol *)protocol {
     NSString *protosString = NSStringFromProtocol(protocol);
@@ -61,6 +62,7 @@
 #endif
     return nil;
 }
+
 /** 缓存target */
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol {
     NSString *protosString = NSStringFromProtocol(protocol);
@@ -76,27 +78,75 @@
 /** 发送消息 spe发射频段 */
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj {
     [self.registeredDic enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *obj, BOOL *stop) {
+        if ([key isEqualToString:module]) return;
+        
         Class class = NSClassFromString(obj);
-        SEL sel = NSSelectorFromString(@"modules");
-        SEL selEvents = NSSelectorFromString(@"events");
+        SEL sel = NSSelectorFromString(@"modules_events");
+        NSString * module_event = [NSString stringWithFormat:@"%@(%zd)",module,event];
         
-        BOOL respon = YES;
+        BOOL response = YES;
         if ([class respondsToSelector:sel]) {
-            NSArray * array = [class performSelector:sel];
-            respon = [array containsObject:module];
+            NSArray *array = [class performSelector:sel];
+            response = [self determineWhetherSend:module event:event modulearray:array];
         }
         
-        if ([class respondsToSelector:selEvents]) {
-            NSArray * arrayEvents = [class performSelector:selEvents];
-            respon = [arrayEvents containsObject:@(event).stringValue];
-        }
-        
-        NSString * module_event = [NSString stringWithFormat:@"%@:%zd",module,event];
         SEL selRespond = NSSelectorFromString(@"providedEventModule_event:eventObj:");
-        if (respon && [class respondsToSelector:selRespond]) {
+        if (response && [class respondsToSelector:selRespond]) {
             [class performSelector:selRespond withObject:module_event withObject:eventObj];
         }
     }];
+}
+
+/**
+  WXMPhotoInterFaceProtocol(100)
+  WXMPhotoInterFaceProtocol(100,104,105)
+  WXMPhotoInterFaceProtocol(100-200)
+  WXMPhotoInterFaceProtocol(100-105,200)
+  WXMPhotoInterFaceProtocol(-)
+ */
+/** 判断是否响应 */
+- (BOOL)determineWhetherSend:(NSString *)module
+                       event:(NSInteger)event
+                 modulearray:(NSArray *)modulearray {
+    NSString * module_event = [NSString stringWithFormat:@"%@(%zd)",module,event];
+    NSString * module_all = [NSString stringWithFormat:@"%@(-)",module];
+    if (modulearray == nil) return NO;
+    if ([modulearray containsObject:module_all]) return YES;
+    if ([modulearray containsObject:module_event]) return YES;
+    
+    /** 不支持数组里有多个相同协议头的string 会增加遍历次数 */
+    __block BOOL response = NO;
+    [modulearray enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL *stop) {
+        if ([obj hasPrefix:module]) {
+            NSString * number = [obj stringByReplacingOccurrencesOfString:module withString:@""];
+            response = [self matchingEvent:event qualified:number];
+            *stop = YES;
+        }
+    }];
+    return response;
+}
+
+/**
+ (100,104,105)
+ (100-200,200-300)
+ (100-105,200)
+ */
+- (BOOL)matchingEvent:(NSInteger)event qualified:(NSString *)qualified {
+    __block BOOL response = NO;
+    NSString *eventString = @(event).stringValue;
+    NSArray *numberArray = [qualified componentsSeparatedByString:@","];
+    if ([numberArray containsObject:eventString]) return YES;
+    [numberArray enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * stop) {
+        if ([obj containsString:@"-"]) {
+            NSInteger start = [obj componentsSeparatedByString:@"-"].firstObject.integerValue;
+            NSInteger end = [obj componentsSeparatedByString:@"-"].lastObject.integerValue;
+            if (event >= start && event <= end) {
+                response = YES;
+                *stop = YES;
+            }
+        }
+    }];
+    return response;
 }
 
 /** 显示弹窗 */

@@ -25,9 +25,16 @@ char * k##procotol##_ser WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#i
 @protocol WQComponentFeedBack <NSObject>
 @optional
 
+/**
+ module_event标准
+ WXMPhotoInterFaceProtocol(100)
+ WXMPhotoInterFaceProtocol(100,104,105)
+ WXMPhotoInterFaceProtocol(100-200)
+ WXMPhotoInterFaceProtocol(100-105,200)
+ WXMPhotoInterFaceProtocol(-)
+*/
 /** 接收的某个module某个event的消息 不实现全部接收 */
-+ (NSArray *)modules;
-+ (NSArray *)events;
++ (NSArray *)modules_events;
 + (void)providedEventModule_event:(NSString *)module_event eventObj:(id)eventObj;
 @end
 

@@ -53,7 +53,7 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
     dispatch_queue_t mainQueue = dispatch_get_main_queue();
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1 * NSEC_PER_SEC)), mainQueue , ^{
         NSArray * array = WQReadConfiguration(WXMKitSerName);
-        [array enumerateObjectsUsingBlock:^(NSString* _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [array enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
             NSDictionary * dictionary = [self jsonToDictionary:obj];
             if (![dictionary isKindOfClass:NSDictionary.class]) return;
             
