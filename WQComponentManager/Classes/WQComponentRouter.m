@@ -74,32 +74,6 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
 }
 
-/** 不需实现协议 需controller作为实现协议对象 */
-- (UIViewController *)viewControllerWithUrl:(NSString *)url {
-    return [self viewControllerWithUrl:url params:nil];
-}
-- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
-    NSURL *urlUrl = [NSURL URLWithString:url];
-    NSString *scheme = urlUrl.scheme;             /** 操作类型 */
-    NSString *host = urlUrl.host;                 /** 第一路径 */
-    if (!scheme || !host || ![scheme isEqualToString:@"component"]) {
-        NSLog(@"不是正确的url");
-        return nil;
-    }
-    
-    NSString *protocol = [self protocol:host];
-    Protocol *pro = NSProtocolFromString(protocol);
-    if (pro == nil) {
-        NSLog(@"url解析不出protocol");
-        return nil;
-    }
-    UIViewController *vc = [[WQComponentManager sharedInstance] serviceProvideForProtocol:pro];
-    if (params && vc) {
-        objc_setAssociatedObject(self, @"component", params, OBJC_ASSOCIATION_COPY_NONATOMIC);
-    }
-    return vc;
-}
-
 /** 根判断 */
 - (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
@@ -157,6 +131,57 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     } @catch (NSException *exception) {  NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally { }
 }
 
+/** 不需实现协议 需controller作为实现协议对象 */
+- (UIViewController *)viewControllerWithUrl:(NSString *)url {
+    return [self viewControllerWithUrl:url params:nil];
+}
+- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+    NSURL *urlUrl = [NSURL URLWithString:url];
+    NSString *scheme = urlUrl.scheme;             /** 操作类型 */
+    NSString *host = urlUrl.host;                 /** 第一路径 */
+    if (!scheme || !host || ![scheme isEqualToString:@"component"]) {
+        NSLog(@"不是正确的url");
+        return nil;
+    }
+    
+    @try {
+        NSString *protocol = [self protocol:host];
+        Protocol *pro = NSProtocolFromString(protocol);
+        if (pro == nil) {
+            NSLog(@"url解析不出protocol");
+            return nil;
+        }
+        UIViewController *vc = [[WQComponentManager sharedInstance] serviceProvideForProtocol:pro];
+        if (params && vc) {
+            objc_setAssociatedObject(self, @"component", params, OBJC_ASSOCIATION_COPY_NONATOMIC);
+        }
+        return vc;
+        
+    } @catch (NSException *exception) {  NSLog(@"viewControllerWithUrl判断崩溃 !!!!!!!"); } @finally { }
+}
+
+/** 发送消息 */
+- (void)sendMessageWithUrl:(NSString *)url {
+    [self sendMessageWithUrl:url event_id:nil];
+}
+- (void)sendMessageWithUrl:(NSString *)url event_id:(_Nullable id)event {
+    NSURL *urlUrl = [NSURL URLWithString:url];
+    NSString *scheme = urlUrl.scheme;             /** 操作类型 */
+    NSString *host = urlUrl.host;                 /** 第一路径 */
+    NSString *relativePath = urlUrl.relativePath; /** 真实子路径 */
+    if (!relativePath || !urlUrl || !host || !scheme || ![scheme isEqualToString:@"sendMessage"]) {
+        NSLog(@"不是正确的url");
+        return;
+    }
+    
+    @try {
+        relativePath = [self action:relativePath];
+        WQComponentManager * man = [WQComponentManager sharedInstance];
+        [man sendEventModule:host event:relativePath.integerValue eventObj:event];
+    } @catch (NSException *exception) { NSLog(@"sendMessageWith判断崩溃 !!!!!!!"); } @finally {};
+}
+
+
 /** 获取参数 */
 - (NSDictionary *)paramsWithString:(NSString*)paramString {
     if (paramString.length == 0) return nil;
@@ -180,6 +205,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 //    if (protocol.length == 0 || !protocol) return nil;
     return host;
 }
+
 /** 获取函数名 */
 - (NSString *)action:(NSString *)relativePath {
 //    if ([relativePath hasPrefix:@"/"]) relativePath = [relativePath substringFromIndex:1];

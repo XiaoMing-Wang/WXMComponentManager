@@ -77,24 +77,34 @@
 
 /** 发送消息 spe发射频段 */
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj {
-    [self.registeredDic enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *obj, BOOL *stop) {
-        if ([key isEqualToString:module]) return;
-        
-        Class class = NSClassFromString(obj);
-        SEL sel = NSSelectorFromString(@"modules_events");
-        NSString * module_event = [NSString stringWithFormat:@"%@(%zd)",module,event];
-        
-        BOOL response = YES;
-        if ([class respondsToSelector:sel]) {
-            NSArray *array = [class performSelector:sel];
-            response = [self determineWhetherSend:module event:event modulearray:array];
-        }
-        
-        SEL selRespond = NSSelectorFromString(@"providedEventModule_event:eventObj:");
-        if (response && [class respondsToSelector:selRespond]) {
-            [class performSelector:selRespond withObject:module_event withObject:eventObj];
-        }
-    }];
+    static dispatch_once_t onceToken;
+    static dispatch_semaphore_t lock;
+    dispatch_once(&onceToken, ^{
+        lock = dispatch_semaphore_create(1);
+    });
+    dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.registeredDic enumerateKeysAndObjectsUsingBlock:^(NSString *key,NSString *obj,BOOL *stop) {
+            if ([key isEqualToString:module]) return;
+           
+            Class class = NSClassFromString(obj);
+            SEL sel = NSSelectorFromString(@"modules_events");
+            NSString * module_event = [NSString stringWithFormat:@"%@(%zd)",module,event];
+            
+            BOOL response = YES;
+            if ([class respondsToSelector:sel]) {
+                NSArray *array = [class performSelector:sel];
+                response = [self determineWhetherSend:module event:event modulearray:array];
+            }
+            
+            SEL selRespond = NSSelectorFromString(@"providedEventModule_event:eventObj:");
+            if (response && [class respondsToSelector:selRespond]) {
+                [class performSelector:selRespond withObject:module_event withObject:eventObj];
+            }
+        }];
+    });
+    
+    dispatch_semaphore_signal(lock);
 }
 
 /**
@@ -126,14 +136,11 @@
     return response;
 }
 
-/**
- (100,104,105)
- (100-200,200-300)
- (100-105,200)
- */
 - (BOOL)matchingEvent:(NSInteger)event qualified:(NSString *)qualified {
     __block BOOL response = NO;
     NSString *eventString = @(event).stringValue;
+    qualified = [qualified stringByReplacingOccurrencesOfString:@"(" withString:@""];
+    qualified = [qualified stringByReplacingOccurrencesOfString:@")" withString:@""];
     NSArray *numberArray = [qualified componentsSeparatedByString:@","];
     if ([numberArray containsObject:eventString]) return YES;
     [numberArray enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * stop) {

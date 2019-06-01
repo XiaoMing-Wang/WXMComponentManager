@@ -6,14 +6,17 @@
 //  Copyright © 2019年 wq. All rights reserved.
 /**
  parameter获取数据
- NSString * urlPermission = @"parameter://WXMPhotoInterFaceProtocol/photoPermission";
+ NSString * url = @"parameter://WXMPhotoInterFaceProtocol/photoPermission";
  
  present push跳转
- NSString * urlPermission = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
- NSString * urlPermission = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
+ NSString * url = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
+ NSString * url = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
  
  component 组件
- NSString * urlPermission = @"component://WXMPhotoInterFaceProtocol";
+ NSString * url = @"component://WXMPhotoInterFaceProtocol";
+ 
+ 发消息
+ NSString * url = @"sendMessage://WXMPhotoInterFaceProtocol/100";
  */
 
 #import <UIKit/UIKit.h>
@@ -42,6 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 /** 不需实现协议 需controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params;
+
+/** 发消息 */
+- (void)sendMessageWithUrl:(NSString *)url;
+- (void)sendMessageWithUrl:(NSString *)url event_id:(_Nullable id)event;
+
 NS_ASSUME_NONNULL_END
 @end
 
