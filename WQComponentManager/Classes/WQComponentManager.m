@@ -18,9 +18,16 @@
 
 @interface WQComponentManager ()
 
+/** NSPointerArray */
+
 /** 协议和实例 */
-@property (nonatomic) NSDictionary<NSString *,id> *registeredDic;
-@property (nonatomic) NSDictionary<NSString *,id> *cacheTarget;
+@property (nonatomic, strong) NSDictionary<NSString *, id> *registeredDic;
+
+/** 缓存了实例对象 引用计数 + 1 */
+@property (nonatomic, strong) NSDictionary<NSString *, id> *cacheTarget;
+
+/** 保存所有初始化的对象 */
+@property (nonatomic, strong) NSPointerArray *allInstanceTarget;
 @end
 
 @implementation WQComponentManager
@@ -33,6 +40,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         mediator = [[WQComponentManager alloc] init];
+        mediator.allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
     });
     return mediator;
 }
@@ -54,6 +62,7 @@
     
     target = [NSClassFromString(targetString) new];
     if ([target conformsToProtocol:protocol] && target) {
+        [self.allInstanceTarget addPointer:(__bridge void * _Nullable)(target)];
         return target;
     }
     
