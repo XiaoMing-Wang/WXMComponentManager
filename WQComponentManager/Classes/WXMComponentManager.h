@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WQComponentManager : NSObject
+@interface WXMComponentManager : NSObject
 
 + (instancetype)sharedInstance;
 
@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* 获取service对象(服务调用者) */
 - (id)serviceProvideForProtocol:(Protocol *)protocol;
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
+- (void)removeServiceCacheForProtocol:(Protocol *)protocol;
 
 /** 发送消息 module模块类 event事件 */
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj;

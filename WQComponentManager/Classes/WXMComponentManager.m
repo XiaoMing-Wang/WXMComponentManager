@@ -5,7 +5,7 @@
 //  Created by wq on 2019/4/19.
 //  Copyright © 2019年 wq. All rights reserved.
 //
-#import "WQComponentManager.h"
+
 #import <objc/runtime.h>
 #include <mach-o/getsect.h>
 #include <mach-o/loader.h>
@@ -14,32 +14,31 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #include <mach-o/ldsyms.h>
-#import "WQComponentHeader.h"
+#import "WXMComponentHeader.h"
+#import "WXMComponentManager.h"
 
-@interface WQComponentManager ()
-
-/** NSPointerArray */
+@interface WXMComponentManager ()
 
 /** 协议和实例 */
-@property (nonatomic, strong) NSDictionary<NSString *, id> *registeredDic;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *registeredDic;
 
-/** 缓存了实例对象 引用计数 + 1 */
-@property (nonatomic, strong) NSDictionary<NSString *, id> *cacheTarget;
+/** 缓存实例对象 引用计数+1 */
+@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *cacheTarget;
 
-/** 保存所有初始化的对象 */
+/** 保存所有初始化的对象(用于发送信息) */
 @property (nonatomic, strong) NSPointerArray *allInstanceTarget;
 @end
 
-@implementation WQComponentManager
+@implementation WXMComponentManager
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 
 + (instancetype)sharedInstance {
-    static WQComponentManager *mediator;
+    static WXMComponentManager *mediator;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        mediator = [[WQComponentManager alloc] init];
+        mediator = [[self alloc] init];
         mediator.allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
     });
     return mediator;
@@ -57,34 +56,48 @@
 - (id)serviceProvideForProtocol:(Protocol *)protocol {
     NSString *protosString = NSStringFromProtocol(protocol);
     NSString *targetString = [self.registeredDic objectForKey:protosString];
-    id target = [self.cacheTarget objectForKey:targetString];
+    id<WXMComponentFeedBack> target = [self.cacheTarget objectForKey:targetString];
     if (target) return target;
     
     target = [NSClassFromString(targetString) new];
     if ([target conformsToProtocol:protocol] && target) {
         [self.allInstanceTarget addPointer:(__bridge void * _Nullable)(target)];
+        
+        /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
+        BOOL needCache = NO;
+        SEL cacheImp = @selector(cacheImplementer);
+        if ([target respondsToSelector:cacheImp]) needCache = [target cacheImplementer];
+        if (needCache && [target isKindOfClass:[NSObject class]]) {
+            [self.cacheTarget setValue:target forKey:targetString];
+        }
+        
         return target;
     }
     
-#if DEBUG
-    [self showAlertController:protosString];
-#endif
+    if (DEBUG) [self showAlertController:protosString];
     return nil;
 }
 
 /** 缓存target */
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol {
-    NSString *protosString = NSStringFromProtocol(protocol);
-    NSString *targetString = [self.registeredDic objectForKey:protosString];
     id target = [self serviceCacheProvideForProtocol:protocol];
     if (target != nil) {
+        NSString *protosString = NSStringFromProtocol(protocol);
+        NSString *targetString = [self.registeredDic objectForKey:protosString];
         [self.cacheTarget setValue:target forKey:targetString];
         return target;
     }
     return nil;
 }
 
-/** 发送消息 spe发射频段 */
+/** 删除缓存的target */
+- (void)removeServiceCacheForProtocol:(Protocol *)protocol {
+    NSString *protosString = NSStringFromProtocol(protocol);
+    NSString *targetString = [self.registeredDic objectForKey:protosString];
+    [self.cacheTarget removeObjectForKey:targetString];
+}
+
+/** 发送消息 */
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj {
     static dispatch_once_t onceToken;
     static dispatch_semaphore_t lock;
@@ -93,36 +106,28 @@
     });
     dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.registeredDic enumerateKeysAndObjectsUsingBlock:^(NSString *key,NSString *obj,BOOL *stop) {
-            if ([key isEqualToString:module]) return;
-           
-            Class class = NSClassFromString(obj);
-            SEL sel = NSSelectorFromString(@"modules_events");
-            NSString * module_event = [NSString stringWithFormat:@"%@(%zd)",module,event];
-            
+        for (id<WXMComponentFeedBack> obj in self.allInstanceTarget) {
+            if (!obj || obj == self) return;
+        
             BOOL response = YES;
-            if ([class respondsToSelector:sel]) {
-                NSArray *array = [class performSelector:sel];
+            if ([obj respondsToSelector:@selector(modules_events)]) {
+                NSArray *array = [obj modules_events];
                 response = [self determineWhetherSend:module event:event modulearray:array];
             }
             
-            SEL selRespond = NSSelectorFromString(@"providedEventModule_event:eventObj:");
-            if (response && [class respondsToSelector:selRespond]) {
-                [class performSelector:selRespond withObject:module_event withObject:eventObj];
+            if (response && [obj respondsToSelector:@selector(providedEventModule_event:)]) {
+                WXMMessageContext * context = [WXMMessageContext new];
+                context.module = module;
+                context.event = event;
+                context.obj = eventObj;
+                [obj providedEventModule_event:context];
             }
-        }];
+        }
     });
     
     dispatch_semaphore_signal(lock);
 }
 
-/**
-  WXMPhotoInterFaceProtocol(100)
-  WXMPhotoInterFaceProtocol(100,104,105)
-  WXMPhotoInterFaceProtocol(100-200)
-  WXMPhotoInterFaceProtocol(100-105,200)
-  WXMPhotoInterFaceProtocol(-)
- */
 /** 判断是否响应 */
 - (BOOL)determineWhetherSend:(NSString *)module
                        event:(NSInteger)event
@@ -169,10 +174,10 @@
 - (void)showAlertController:(NSString *)title {
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     NSString * msg = [NSString stringWithFormat:@"协议:%@ 没有注册",title];
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *can = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
-    [alertController addAction:can];
-    [window.rootViewController presentViewController:alertController animated:YES completion:nil];
+    UIAlertController *al=[UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:1];
+    UIAlertAction *can = [UIAlertAction actionWithTitle:@"取消" style:1 handler:nil];
+    [al addAction:can];
+    [window.rootViewController presentViewController:al animated:YES completion:nil];
 }
 #pragma clang diagnostic pop
 @end

@@ -5,7 +5,7 @@
 //  Created by edz on 2019/4/25.
 //  Copyright © 2019年 wq. All rights reserved.
 //
-#import "WQComponentAnnotation.h"
+
 #import <objc/runtime.h>
 #include <mach-o/getsect.h>
 #include <mach-o/loader.h>
@@ -14,7 +14,8 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #include <mach-o/ldsyms.h>
-#import "WQComponentHeader.h"
+#import "WXMComponentAnnotation.h"
+#import "WXMComponentHeader.h"
 
 /** 获取存储在WXMModuleClass里的字段集合 */
 static NSArray<NSString *>* WQReadConfiguration(char *section) {
@@ -46,12 +47,12 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
     return configs;
 }
 
-@implementation WQComponentAnnotation
+@implementation WXMComponentAnnotation
 
 /** 注册组件 */
 + (void)load {
     dispatch_queue_t mainQueue = dispatch_get_main_queue();
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1 * NSEC_PER_SEC)), mainQueue , ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1 * NSEC_PER_SEC)), mainQueue, ^{
         NSArray * array = WQReadConfiguration(WXMKitSerName);
         [array enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
             NSDictionary * dictionary = [self jsonToDictionary:obj];

@@ -10,6 +10,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface WQComponentAnnotation : NSObject
+@interface WXMComponentAnnotation : NSObject
 
 @end
+
