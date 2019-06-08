@@ -81,7 +81,13 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url {
-    return [self viewControllerWithUrl:url params:nil];
+    return [self viewControllerWithUrl:url obj:nil];
+}
+- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+    return [self viewControllerWithUrl:url obj:params];
+}
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(void (^)(NSDictionary *))callBack {
+    return [self viewControllerWithUrl:url obj:callBack];
 }
 
 /** 发送消息 */
@@ -148,7 +154,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 }
 
 /** 根判断2(直接返回controller) */
-- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+- (UIViewController *)viewControllerWithUrl:(NSString *)url obj:(id _Nullable)obj {
     NSURL *urlUrl = [NSURL URLWithString:url];
     NSString *scheme = urlUrl.scheme;             /** 操作类型 */
     NSString *host = urlUrl.host;                 /** 第一路径 */
@@ -158,12 +164,16 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     }
     
     @try {
+        
         NSString *protocol = [self protocol:host];
         Protocol *pro = NSProtocolFromString(protocol);
         UIViewController <WXMComponentFeedBack>*controller = nil;
         controller = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:pro];
-        if ([controller respondsToSelector:@selector(wc_acceptParameters:)]) {
-            [controller wc_acceptParameters:params];
+        if ([obj isKindOfClass:[NSDictionary class]] && obj) {
+            NSDictionary *parameters = (NSDictionary *)obj;
+            if ([controller respondsToSelector:@selector(wc_acceptParameters:)]) {
+                [controller wc_acceptParameters:parameters];
+            }
         }
         return controller ?: nil;
     } @catch (NSException *exception) {  NSLog(@"viewControllerWithUrl判断崩溃 !!!!!!!"); } @finally { }

@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params;
+//- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(void (^)(NSDictionary *))callBack;
 
 /** 发消息 */
 - (void)sendMessageWithUrl:(NSString *)url;

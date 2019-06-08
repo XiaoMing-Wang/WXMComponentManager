@@ -33,19 +33,20 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
 /**
  * module_event标准
  
- * WXMPhotoInterFaceProtocol(100)
- * WXMPhotoInterFaceProtocol(100,104,105)
- * WXMPhotoInterFaceProtocol(100-200)
- * WXMPhotoInterFaceProtocol(100-105,200)
- * WXMPhotoInterFaceProtocol(-)
+    * WXMPhotoInterFaceProtocol(100)
+    * WXMPhotoInterFaceProtocol(100,104,105)
+    * WXMPhotoInterFaceProtocol(100-200)
+    * WXMPhotoInterFaceProtocol(100-105,200)
+    * WXMPhotoInterFaceProtocol(-)
  
  */
 
-/** 是否缓存当前类对象 */
+/** 是否缓存当前类对象 noti:controller会被导航控制器强引用能够接收到消息 而NSObject则会被释放掉 */
 - (BOOL)wc_cacheImplementer;
 
 /** 发送的参数 */
 - (void)wc_acceptParameters:(NSDictionary *)parameters;
+- (void)wc_acceptCallBack:(void(^)(NSDictionary *))callBack;
 
 /** 消息接受类型指定和消息接受 */
 - (NSArray *)wc_modules_events;
