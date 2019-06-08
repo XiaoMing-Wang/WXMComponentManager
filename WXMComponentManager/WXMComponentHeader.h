@@ -40,9 +40,16 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
  * WXMPhotoInterFaceProtocol(-)
  
  */
-- (BOOL)cacheImplementer;
-- (NSArray *)modules_events;
-- (void)providedEventModule_event:(WXMMessageContext *)context;
+
+/** 是否缓存当前类对象 */
+- (BOOL)wc_cacheImplementer;
+
+/** 发送的参数 */
+- (void)wc_acceptParameters:(NSDictionary *)parameters;
+
+/** 消息接受类型指定和消息接受 */
+- (NSArray *)wc_modules_events;
+- (void)wc_providedEventModule_event:(WXMMessageContext *)context;
 @end
 #endif /* WQComponentHeader_h */
 

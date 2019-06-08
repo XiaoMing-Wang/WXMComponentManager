@@ -79,7 +79,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
 }
 
-/** 需controller作为实现协议对象 */
+/** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url {
     return [self viewControllerWithUrl:url params:nil];
 }
@@ -160,12 +160,12 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     @try {
         NSString *protocol = [self protocol:host];
         Protocol *pro = NSProtocolFromString(protocol);
-        UIViewController *vc = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:pro];
-        if (params && vc) {
-            objc_setAssociatedObject(vc, @"component", params, OBJC_ASSOCIATION_COPY_NONATOMIC);
+        UIViewController <WXMComponentFeedBack>*controller = nil;
+        controller = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:pro];
+        if ([controller respondsToSelector:@selector(wc_acceptParameters:)]) {
+            [controller wc_acceptParameters:params];
         }
-        return vc ?: nil;
-        
+        return controller ?: nil;
     } @catch (NSException *exception) {  NSLog(@"viewControllerWithUrl判断崩溃 !!!!!!!"); } @finally { }
 }
 

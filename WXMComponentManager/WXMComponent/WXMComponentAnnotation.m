@@ -60,7 +60,9 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
             
             NSString *protocol = dictionary.allKeys.firstObject;
             NSString *service = dictionary.allValues.firstObject;
-            [WXMCPManger addService:service protocol:protocol]; /** 注册组件 */
+            
+            /** 注册组件 */
+            [[WXMComponentManager sharedInstance] addService:service protocol:protocol];
         }];
     });
 }

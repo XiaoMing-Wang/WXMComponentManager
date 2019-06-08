@@ -66,7 +66,7 @@
         /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
         BOOL needCache = NO;
         SEL cacheImp = @selector(cacheImplementer);
-        if ([target respondsToSelector:cacheImp]) needCache = [target cacheImplementer];
+        if ([target respondsToSelector:cacheImp]) needCache = [target wc_cacheImplementer];
         if (needCache && [target isKindOfClass:[NSObject class]]) {
             [self.cacheTarget setValue:target forKey:targetString];
         }
@@ -111,7 +111,7 @@
         
             BOOL response = YES;
             if ([obj respondsToSelector:@selector(modules_events)]) {
-                NSArray *array = [obj modules_events];
+                NSArray *array = [obj wc_modules_events];
                 response = [self determineWhetherSend:module event:event modulearray:array];
             }
             
@@ -120,7 +120,7 @@
                 context.module = module;
                 context.event = event;
                 context.obj = eventObj;
-                [obj providedEventModule_event:context];
+                [obj wc_providedEventModule_event:context];
             }
         }
     });

@@ -33,14 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 /** 打开url push直接跳转 */
 - (void)openUrl:(NSString *)url;
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)openUrl:(NSString *)url event_id:(void (^)(id _Nullable obj))event;
-- (void)openUrl:(NSString *)url event_map:(void (^)(NSDictionary *obj))event;
 
 /** 返回结果 一般返回controller(模块实现类实现协议) */
 - (id)resultsOpenUrl:(NSString *)url;
 - (id)resultsOpenUrl:(NSString *)url params:(NSDictionary * _Nullable)params;
-- (id)resultsOpenUrl:(NSString *)url event_id:(void (^)(id _Nullable obj))event;
-- (id)resultsOpenUrl:(NSString *)url event_map:(void (^)(NSDictionary * obj))event;
 
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
@@ -53,3 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 @end
 
+//- (void)openUrl:(NSString *)url event_id:(void (^)(id _Nullable obj))event;
+//- (void)openUrl:(NSString *)url event_map:(void (^)(NSDictionary *obj))event;
+//- (id)resultsOpenUrl:(NSString *)url event_id:(void (^)(id _Nullable obj))event;
+//- (id)resultsOpenUrl:(NSString *)url event_map:(void (^)(NSDictionary * obj))event;
