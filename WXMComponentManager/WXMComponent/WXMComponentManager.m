@@ -65,7 +65,7 @@
         
         /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
         BOOL needCache = NO;
-        SEL cacheImp = @selector(cacheImplementer);
+        SEL cacheImp = @selector(wc_cacheImplementer);
         if ([target respondsToSelector:cacheImp]) needCache = [target wc_cacheImplementer];
         if (needCache && [target isKindOfClass:[NSObject class]]) {
             [self.cacheTarget setValue:target forKey:targetString];
@@ -115,12 +115,19 @@
                 response = [self determineWhetherSend:module event:event modulearray:array];
             }
             
-            if (response && [obj respondsToSelector:@selector(providedEventModule_event:)]) {
-                WXMMessageContext * context = [WXMMessageContext new];
+            
+            if (response && [obj respondsToSelector:@selector(wc_receivesMessageWithEventModule:)]) {
+                WXMMessageContext *context = [WXMMessageContext new];
                 context.module = module;
                 context.event = event;
-                context.obj = eventObj;
-                [obj wc_providedEventModule_event:context];
+                if ([eventObj isKindOfClass:[NSDictionary class]] && eventObj) {
+                    NSDictionary *parameters = (NSDictionary *)eventObj;
+                    context.parameter = parameters;
+                } else if(eventObj != nil) {
+                    RouterCallBack callBack = (RouterCallBack)eventObj;
+                    context.callBack = callBack;
+                }
+                [obj wc_receivesMessageWithEventModule:context];
             }
         }
     });

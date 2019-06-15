@@ -5,10 +5,10 @@
 //  Created by edz on 2019/4/24.
 //  Copyright © 2019年 wq. All rights reserved.
 //
-
+#import <objc/runtime.h>
 #import "WXMComponentRouter.h"
 #import "WXMComponentHeader.h"
-#import <objc/runtime.h>
+#import "WXMParameterContext.h"
 
 typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeWhether = 0,
@@ -44,39 +44,19 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     [self openUrl:url passObj:params routerType:WXMRouterTypeJump];
 }
-- (void)openUrl:(NSString *_Nonnull)url event_id:(void (^)(id obj))event {
-    [self openUrl:url passObj:event routerType:WXMRouterTypeJump];
-}
-- (void)openUrl:(NSString *_Nonnull)url
-      event_map:(void (^)(NSDictionary *obj))event {
-    [self openUrl:url passObj:event routerType:WXMRouterTypeJump];
-}
-
-/** 解析url 跳转viewcontroller */
-- (void)jumpViewController:(UIViewController *)vc scheme:(NSString *)scheme {
-    if (vc && [vc isKindOfClass:[UIViewController class]]) {
-        if ([scheme isEqualToString:@"push"]) {
-            [self.currentNavigationController pushViewController:vc animated:YES];
-        } else if ([scheme isEqualToString:@"present"]) {
-            [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
-        } else if ([scheme isEqualToString:@""]) {
-            
-        }
-    }
+- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack {
+    [self openUrl:url passObj:callBack routerType:WXMRouterTypeJump];
 }
 
 /** 返回结果(模块实现类实现协议方法) */
 - (id)resultsOpenUrl:(NSString * _Nonnull)url {
     return [self openUrl:url passObj:nil routerType:WXMRouterTypeParameter];
 }
-- (id)resultsOpenUrl:(NSString * _Nonnull)url params:(NSDictionary * _Nullable)params {
+- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
     return [self openUrl:url passObj:params routerType:WXMRouterTypeParameter];
 }
-- (id)resultsOpenUrl:(NSString * _Nonnull)url event_id:(void (^)(id obj))event {
-    return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
-}
-- (id)resultsOpenUrl:(NSString * _Nonnull)url event_map:(void (^)(NSDictionary * obj))event {
-    return [self openUrl:url passObj:event routerType:WXMRouterTypeParameter];
+- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack {
+    return [self openUrl:url passObj:callBack routerType:WXMRouterTypeParameter];
 }
 
 /** controller作为实现协议对象 */
@@ -86,13 +66,19 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
     return [self viewControllerWithUrl:url obj:params];
 }
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(void (^)(NSDictionary *))callBack {
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack {
     return [self viewControllerWithUrl:url obj:callBack];
 }
 
 /** 发送消息 */
 - (void)sendMessageWithUrl:(NSString *)url {
     [self sendMessageWithUrl:url event_id:nil];
+}
+- (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+    [self sendMessageWithUrl:url event_id:params];
+}
+- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack {
+    [self sendMessageWithUrl:url event_id:callBack];
 }
 
 /** 根判断1 */
@@ -112,7 +98,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         /** 判断传递参数是什么类型 */
         id parameter = nil;
         if (passObj == nil) parameter = [self paramsWithString:query];
-        if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
+        else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
             parameter = passObj;
         } else {
             parameter = passObj;
@@ -145,12 +131,42 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         } else if (routerType == WXMRouterTypeParameter)  {
             return [service performSelector:selReal withObject:parameter];
         } else if (routerType == WXMRouterTypeJump) {
-            UIViewController * vc = [service performSelector:selReal withObject:parameter];
-            [self jumpViewController:vc scheme:scheme];
+            UIViewController <WXMComponentFeedBack>* vc = nil;
+            vc = [service performSelector:selReal withObject:parameter];
+            [self jumpViewController:vc scheme:scheme obj:parameter];
         }
         
         return nil;
     } @catch (NSException *exception) {  NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally { }
+}
+
+/** 解析url 跳转viewcontroller */
+- (void)jumpViewController:(UIViewController <WXMComponentFeedBack>*)vc
+                    scheme:(NSString *)scheme
+                       obj:(id)obj {
+    
+    WXMParameterContext *context = [WXMParameterContext new];
+    if ([obj isKindOfClass:[NSDictionary class]] && obj) {
+        NSDictionary *parameters = (NSDictionary *)obj;
+        context.parameter = parameters;
+    } else if(obj != nil) {
+        RouterCallBack callBack = (RouterCallBack)obj;
+        context.callBack = callBack;
+    }
+    
+    if (vc && [vc isKindOfClass:[UIViewController class]]) {
+        if ([vc respondsToSelector:@selector(wc_receiveParameters:)]) {
+            [vc wc_receiveParameters:context];
+        }
+        
+        if ([scheme isEqualToString:@"push"]) {
+            [self.currentNavigationController pushViewController:vc animated:YES];
+        } else if ([scheme isEqualToString:@"present"]) {
+            [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
+        } else if ([scheme isEqualToString:@""]) {
+            
+        }
+    }
 }
 
 /** 根判断2(直接返回controller) */
@@ -164,19 +180,25 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     }
     
     @try {
-        
         NSString *protocol = [self protocol:host];
         Protocol *pro = NSProtocolFromString(protocol);
         UIViewController <WXMComponentFeedBack>*controller = nil;
         controller = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:pro];
+        
+        WXMParameterContext *context = [WXMParameterContext new];
         if ([obj isKindOfClass:[NSDictionary class]] && obj) {
             NSDictionary *parameters = (NSDictionary *)obj;
-            if ([controller respondsToSelector:@selector(wc_acceptParameters:)]) {
-                [controller wc_acceptParameters:parameters];
-            }
+            context.parameter = parameters;
+        } else if(obj != nil) {
+            RouterCallBack callBack = (RouterCallBack)obj;
+            context.callBack = callBack;
+        }
+        
+        if ([controller respondsToSelector:@selector(wc_receiveParameters:)]) {
+            [controller wc_receiveParameters:context];
         }
         return controller ?: nil;
-    } @catch (NSException *exception) {  NSLog(@"viewControllerWithUrl判断崩溃 !!!!!!!"); } @finally { }
+    } @catch (NSException *exception) { NSLog(@"viewControllerWithUrl判断崩溃 !!!"); } @finally {}
 }
 
 /** 根判断3(发送消息) */
@@ -202,7 +224,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     if (paramString.length == 0) return nil;
     NSMutableDictionary * dictionary = @{}.mutableCopy;
     NSArray *arrays = [paramString componentsSeparatedByString:@"&"];
-    [arrays enumerateObjectsUsingBlock:^(NSString* _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [arrays enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
         if ([obj containsString:@"="]) {
             NSString * key = [obj componentsSeparatedByString:@"="].firstObject;
             NSString * value = [obj componentsSeparatedByString:@"="].lastObject;
@@ -233,9 +255,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
             return (UINavigationController *)subVC;
         }
         return nil;
-    }
-    
-    if ([rootVC isKindOfClass:[UINavigationController class]]) {
+    } else if ([rootVC isKindOfClass:[UINavigationController class]]) {
         return (UINavigationController *)rootVC;
     }
     return nil;
