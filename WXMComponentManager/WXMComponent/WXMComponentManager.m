@@ -70,7 +70,6 @@
         if (needCache && [target isKindOfClass:[NSObject class]]) {
             [self.cacheTarget setValue:target forKey:targetString];
         }
-        
         return target;
     }
     
