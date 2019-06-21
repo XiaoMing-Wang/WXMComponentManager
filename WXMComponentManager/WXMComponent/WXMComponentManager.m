@@ -61,7 +61,7 @@
     
     target = [NSClassFromString(targetString) new];
     if ([target conformsToProtocol:protocol] && target) {
-        [self.allInstanceTarget addPointer:(__bridge void * _Nullable)(target)];
+        [self.allInstanceTarget addPointer:(__bridge void *_Nullable)(target)];
         
         /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
         BOOL needCache = NO;
@@ -70,11 +70,12 @@
         if (needCache && [target isKindOfClass:[NSObject class]]) {
             [self.cacheTarget setValue:target forKey:targetString];
         }
-        
         return target;
     }
     
-    if (DEBUG) [self showAlertController:protosString];
+#ifdef DEBUG
+    [self showAlertController:protosString];
+#endif
     return nil;
 }
 
@@ -124,7 +125,7 @@
                     NSDictionary *parameters = (NSDictionary *)eventObj;
                     context.parameter = parameters;
                 } else if(eventObj != nil) {
-                    RouterCallBack callBack = (RouterCallBack)eventObj;
+                    RouterCallBack callBack = (RouterCallBack) eventObj;
                     context.callBack = callBack;
                 }
                 [obj wc_receivesMessageWithEventModule:context];

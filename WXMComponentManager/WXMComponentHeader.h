@@ -33,21 +33,21 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
      WXMPhotoInterFaceProtocol(100-200)
      WXMPhotoInterFaceProtocol(100-105,200)
      WXMPhotoInterFaceProtocol(-) */
-/** 消息传递协议 需要处理消息的遵循该协议  */
+/** 模块交互协议需要处理消息的遵循该协议  */
 @protocol WXMComponentFeedBack <NSObject>
 @optional
 
 /** 是否缓存当前类对象 noti:controller会被导航控制器强引用能够接收到消息 而NSObject则会被释放掉 */
 - (BOOL)wc_cacheImplementer;
 
-/** 接收初始化接收的参数 */
-- (void)wc_receiveParameters:(WXMParameterContext *)context;
-
 /** 消息接受类型指定和消息接受 */
 - (NSArray *)wc_modules_events;
 
-/** 接收其他模块发出的消息(动作) */
-- (void)wc_receivesMessageWithEventModule:(WXMMessageContext *)context;
+/** 接收初始化接收的参数 */
+- (void)wc_receiveParameters:(WXMParameterContext *)parameterContext;
+
+/** 接收其他模块发出的消息 */
+- (void)wc_receivesMessageWithEventModule:(WXMMessageContext *)eventContext;
 
 @end
 #endif

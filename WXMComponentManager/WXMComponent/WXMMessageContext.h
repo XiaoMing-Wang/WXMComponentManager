@@ -23,5 +23,6 @@ typedef void (^RouterCallBack)(NSDictionary *);
 
 /** 回调 */
 @property (nonatomic, strong) RouterCallBack callBack;
+
 @end
 

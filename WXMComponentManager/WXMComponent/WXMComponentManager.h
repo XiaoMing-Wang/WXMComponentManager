@@ -27,4 +27,5 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj;
 
 @end
+
 NS_ASSUME_NONNULL_END

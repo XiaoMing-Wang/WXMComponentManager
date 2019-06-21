@@ -49,10 +49,10 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 }
 
 /** 返回结果(模块实现类实现协议方法) */
-- (id)resultsOpenUrl:(NSString * _Nonnull)url {
+- (id)resultsOpenUrl:(NSString *)url {
     return [self openUrl:url passObj:nil routerType:WXMRouterTypeParameter];
 }
-- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     return [self openUrl:url passObj:params routerType:WXMRouterTypeParameter];
 }
 - (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack {
@@ -63,7 +63,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (UIViewController *)viewControllerWithUrl:(NSString *)url {
     return [self viewControllerWithUrl:url obj:nil];
 }
-- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     return [self viewControllerWithUrl:url obj:params];
 }
 - (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack {
@@ -74,7 +74,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (void)sendMessageWithUrl:(NSString *)url {
     [self sendMessageWithUrl:url event_id:nil];
 }
-- (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary * _Nullable)params {
+- (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     [self sendMessageWithUrl:url event_id:params];
 }
 - (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack {
@@ -97,11 +97,12 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         
         /** 判断传递参数是什么类型 */
         id parameter = nil;
-        if (passObj == nil) parameter = [self paramsWithString:query];
-        else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
+        if (passObj == nil) {
+            parameter = [self paramsWithString:query];
+        } else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
             parameter = passObj;
         } else {
-            parameter = passObj;
+            parameter = passObj; /** block */
         }
         
         /** 剪切参数获取字符串 */
@@ -118,9 +119,9 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         SEL sel = NSSelectorFromString(action);
         SEL selSuffix = NSSelectorFromString([action stringByAppendingString:@":"]);
         SEL selReal = [service respondsToSelector:sel] ? sel : selSuffix;
-        if (!service | !sel | ![service respondsToSelector:selReal]) {
+        if (!service || !selReal || ![service respondsToSelector:selReal]) {
            if (!service) NSLog(@"无法生成service类");
-           if (!sel) NSLog(@"无法生成action函数");
+           if (!selReal) NSLog(@"无法生成action函数");
            if (![service respondsToSelector:selReal]) NSLog(@"service无法无法响应这个函数");
             return nil;
         }
@@ -137,7 +138,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         }
         
         return nil;
-    } @catch (NSException *exception) {  NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally { }
+    } @catch (NSException *exception) {  NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally {}
 }
 
 /** 解析url 跳转viewcontroller */
@@ -248,17 +249,27 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (UINavigationController *)currentNavigationController {
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     UIViewController *rootVC = window.rootViewController;
-    if ([rootVC isKindOfClass:[UITabBarController class]]) {
-        UITabBarController *tabBar = (UITabBarController *)rootVC;
-        UIViewController * subVC = tabBar.selectedViewController;
-        if ([subVC isKindOfClass:[UINavigationController class]]) {
-            return (UINavigationController *)subVC;
+    
+    UINavigationController *(^controllersCallback)(UIViewController *) =
+    ^UINavigationController *(UIViewController *controller) {
+        if ([controller isKindOfClass:[UINavigationController class]]) {
+            return (UINavigationController *)controller;
+        } else if ([controller isKindOfClass:[UITabBarController class]]) {
+            UITabBarController *tabBar = (UITabBarController *)controller;
+            UIViewController * subVC = tabBar.selectedViewController;
+            if ([subVC isKindOfClass:[UINavigationController class]]) {
+                return (UINavigationController *)subVC;
+            }
+            return nil;
         }
         return nil;
-    } else if ([rootVC isKindOfClass:[UINavigationController class]]) {
-        return (UINavigationController *)rootVC;
+    };
+    
+    if (rootVC.presentedViewController) {
+        return controllersCallback(rootVC.presentedViewController);
+    } else {
+        return controllersCallback(rootVC);
     }
-    return nil;
 }
 
 @end
