@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
 @interface WXMComponentRouter : NSObject
 
 typedef void (^RouterCallBack)(NSDictionary *_Nullable);

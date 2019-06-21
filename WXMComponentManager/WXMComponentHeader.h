@@ -50,5 +50,6 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
 - (void)wc_receivesMessageWithEventModule:(WXMMessageContext *)eventContext;
 
 @end
+
 #endif
 
