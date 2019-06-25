@@ -16,6 +16,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeJump = 2,
 };
 
+static char deliveryKey;
 @implementation WXMComponentRouter
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -85,6 +86,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
 
+        objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
         NSURL *urlUrl = [NSURL URLWithString:url];
         NSString *scheme = urlUrl.scheme;             /** 操作类型 */
         NSString *host = urlUrl.host;                 /** 第一路径 */
@@ -97,12 +99,16 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         
         /** 判断传递参数是什么类型 */
         id parameter = nil;
+        BOOL isBlock = NO;
+        
         if (passObj == nil) {
             parameter = [self paramsWithString:query];
         } else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
             parameter = passObj;
         } else {
-            parameter = passObj; /** block */
+            /** block */
+            isBlock = YES;
+            parameter = passObj;
         }
         
         /** 剪切参数获取字符串 */
@@ -130,10 +136,13 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         if (routerType == WXMRouterTypeWhether) {
             return @(YES);
         } else if (routerType == WXMRouterTypeParameter)  {
-            return [service performSelector:selReal withObject:parameter];
+            id obj = [service performSelector:selReal withObject:parameter];
+            if (isBlock) objc_setAssociatedObject(obj, &deliveryKey, parameter, policy);
+            return obj;
         } else if (routerType == WXMRouterTypeJump) {
             UIViewController <WXMComponentFeedBack>* vc = nil;
             vc = [service performSelector:selReal withObject:parameter];
+            if (isBlock) objc_setAssociatedObject(vc, &deliveryKey, parameter, policy);
             [self jumpViewController:vc scheme:scheme obj:parameter];
         }
         
@@ -218,6 +227,12 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         WXMComponentManager * man = [WXMComponentManager sharedInstance];
         [man sendEventModule:host event:relativePath.integerValue eventObj:event];
     } @catch (NSException *exception) { NSLog(@"sendMessageWith判断崩溃 !!!!!!!"); } @finally {};
+}
+
+/** (初始化时)正向传递的回调数据 */
+- (void)deliveryParameterWithTarget:(id)target parameter:(NSDictionary *)parameter {
+    RouterCallBack callback = objc_getAssociatedObject(target, &deliveryKey);
+    if (callback != nil) callback(parameter);
 }
 
 /** 获取参数 */

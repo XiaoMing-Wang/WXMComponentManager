@@ -4,8 +4,8 @@
 //
 //  Created by edz on 2019/4/24.
 //  Copyright © 2019年 wq. All rights reserved.
-/** 建议不同模块以NSDictionary作为参数传递 由模型转字典传递出去 接收方字典转模型 */
 /**
+ 建议不同模块以NSDictionary作为参数传递 由模型转字典传递出去 接收方字典转模型
  NSString * url = @"parameter://WXMPhotoInterFaceProtocol/photoPermission";
  NSString * url = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
  NSString * url = @"push://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
@@ -18,9 +18,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WXMComponentRouter : NSObject
-
 typedef void (^RouterCallBack)(NSDictionary *_Nullable);
+@interface WXMComponentRouter : NSObject
 
 + (instancetype)sharedInstance;
 
@@ -30,25 +29,27 @@ typedef void (^RouterCallBack)(NSDictionary *_Nullable);
 /** 打开url 例 push直接跳转 */
 - (void)openUrl:(NSString *)url;
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;
+- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;/***/
 
 /** 返回结果(模块实现类实现协议) */
 - (id)resultsOpenUrl:(NSString *)url;
 - (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;
+- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack; /***/
 
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/***/
 
 /** 发消息 */
 - (void)sendMessageWithUrl:(NSString *)url;
 - (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
 - (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
 
-NS_ASSUME_NONNULL_END
+/** (初始化时)正向传递的回调数据 */
+- (void)deliveryParameterWithTarget:(id)target parameter:(NSDictionary *)parameter;/***/
 
+NS_ASSUME_NONNULL_END
 @end
 
 

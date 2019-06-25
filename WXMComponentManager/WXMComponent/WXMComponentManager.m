@@ -116,7 +116,6 @@
                 response = [self determineWhetherSend:module event:event modulearray:array];
             }
             
-            
             if (response && [obj respondsToSelector:@selector(wc_receivesMessageWithEventModule:)]) {
                 WXMMessageContext *context = [WXMMessageContext new];
                 context.module = module;
@@ -180,12 +179,14 @@
 
 /** 显示弹窗 */
 - (void)showAlertController:(NSString *)title {
+    UIAlertController *aler = nil;
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     NSString * msg = [NSString stringWithFormat:@"协议:%@ 没有注册",title];
-    UIAlertController *al=[UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:1];
+  
+    aler = [UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:1];
     UIAlertAction *can = [UIAlertAction actionWithTitle:@"取消" style:1 handler:nil];
-    [al addAction:can];
-    [window.rootViewController presentViewController:al animated:YES completion:nil];
+    [aler addAction:can];
+    [window.rootViewController presentViewController:aler animated:YES completion:nil];
 }
 #pragma clang diagnostic pop
 @end
