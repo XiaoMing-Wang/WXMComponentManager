@@ -116,7 +116,7 @@
                 response = [self determineWhetherSend:module event:event modulearray:array];
             }
             
-            if (response && [obj respondsToSelector:@selector(wc_receivesMessageWithEventModule:)]) {
+            if ([obj respondsToSelector:@selector(wc_receivesMessageWithEventModule:)]) {
                 WXMMessageContext *context = [WXMMessageContext new];
                 context.module = module;
                 context.event = event;
@@ -124,8 +124,11 @@
                     NSDictionary *parameters = (NSDictionary *)eventObj;
                     context.parameter = parameters;
                 } else if(eventObj != nil) {
+                    objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
+                    NSString *key = NSStringFromClass(self.class);
                     RouterCallBack callBack = (RouterCallBack) eventObj;
                     context.callBack = callBack;
+                    objc_setAssociatedObject(obj, CFBridgingRetain(key), callBack, policy);
                 }
                 [obj wc_receivesMessageWithEventModule:context];
             }

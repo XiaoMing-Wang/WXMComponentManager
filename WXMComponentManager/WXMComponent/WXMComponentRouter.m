@@ -230,9 +230,15 @@ static char deliveryKey;
 }
 
 /** (初始化时)正向传递的回调数据 */
-- (void)deliveryParameterWithTarget:(id)target parameter:(NSDictionary *)parameter {
+- (void)callBackParameterWithTarget:(id)target parameter:(NSDictionary *)parameter {
     RouterCallBack callback = objc_getAssociatedObject(target, &deliveryKey);
-    if (callback != nil) callback(parameter);
+    if (callback) callback(parameter);
+}
+
+- (void)callBackMessageWithTarget:(id)target parameter:(NSDictionary *)parameter {
+    NSString *key = NSStringFromClass(WXMComponentManager.class);
+    RouterCallBack callback = objc_getAssociatedObject(target, CFBridgingRetain(key));
+    if (callback) callback(parameter);
 }
 
 /** 获取参数 */

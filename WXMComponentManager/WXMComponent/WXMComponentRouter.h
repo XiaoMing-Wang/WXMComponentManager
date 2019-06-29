@@ -29,25 +29,26 @@ typedef void (^RouterCallBack)(NSDictionary *_Nullable);
 /** 打开url 例 push直接跳转 */
 - (void)openUrl:(NSString *)url;
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;/***/
+- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;/*1*/
 
 /** 返回结果(模块实现类实现协议) */
 - (id)resultsOpenUrl:(NSString *)url;
 - (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack; /***/
+- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack; /*1*/
 
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/***/
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/*1*/
 
 /** 发消息 */
 - (void)sendMessageWithUrl:(NSString *)url;
 - (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
+- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/*2*/
 
 /** (初始化时)正向传递的回调数据 */
-- (void)deliveryParameterWithTarget:(id)target parameter:(NSDictionary *)parameter;/***/
+- (void)callBackParameterWithTarget:(id)target parameter:(NSDictionary *)parameter;/*1*/
+- (void)callBackMessageWithTarget:(id)target parameter:(NSDictionary *)parameter;/*2*/
 
 NS_ASSUME_NONNULL_END
 @end
