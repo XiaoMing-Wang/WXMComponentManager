@@ -48,6 +48,8 @@ typedef void (^RouterCallBack)(NSDictionary *_Nullable);
 
 /** (初始化时)正向传递的回调数据 */
 - (void)callBackParameterWithTarget:(id)target parameter:(NSDictionary *)parameter;/*1*/
+
+/** (接收消息时)正向传递的回调数据 */
 - (void)callBackMessageWithTarget:(id)target parameter:(NSDictionary *)parameter;/*2*/
 
 NS_ASSUME_NONNULL_END
