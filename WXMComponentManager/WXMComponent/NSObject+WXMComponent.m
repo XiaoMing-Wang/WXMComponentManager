@@ -12,7 +12,6 @@
 @interface NSObject ()
 @property (nonatomic, strong) NSMutableArray *listenArray;
 @property (nonatomic, copy) NSString *currentListen;
-@property (nonatomic, assign) pthread_mutex_t mutex;
 @property (nonatomic, strong) NSLock *listenLock;
 @end
 @implementation NSObject (WXMComponent)
@@ -74,9 +73,7 @@
 
 - (void)_dealloc {
     if (self.listenArray) [self.listenArray removeAllObjects];
+    if (self.listenLock) self.listenLock = nil;
 }
 
-- (void)setMutex:(pthread_mutex_t)mutex {
-    
-}
 @end
