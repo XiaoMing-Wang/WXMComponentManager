@@ -12,43 +12,42 @@
 @interface NSObject ()
 @property (nonatomic, strong) NSMutableArray *listenArray;
 @property (nonatomic, copy) NSString *currentListen;
+@property (nonatomic, assign) pthread_mutex_t mutex;
+@property (nonatomic, strong) NSLock *listenLock;
 @end
 @implementation NSObject (WXMComponent)
 
 - (instancetype (^)(NSString *))observeKey {
     return ^id(NSString *listen) {
-        @synchronized (self) {
-            self.currentListen = listen;
-        }
+        if (!self.listenLock) self.listenLock = [[NSLock alloc] init];
+        [self.listenLock lock];
+        self.currentListen = listen;
+        [self.listenLock unlock];
         return self;
     };
 }
 
 /** block要和 listen绑定 */
 - (void)wxm_subscribeNext:(void (^)(NSDictionary *parameter))callback {
-    @synchronized (self) {
-        WXMListenObj *message = [WXMListenObj new];
-        message.listen = self.currentListen;
-        message.callBack = callback;
-        
-        NSMutableArray * arrayM = self.listenArray.mutableCopy;
-        if (arrayM.count >= 10) return;
-        [arrayM addObject:message];
-        [self setListenArray:arrayM];
-    }
+    NSMutableArray * arrayM = self.listenArray ? self.listenArray.mutableCopy : @[].mutableCopy;
+    if (arrayM.count >= 10) return;
+    
+    [self.listenLock lock];
+    WXMListenObj *message = [WXMListenObj new];
+    message.listen = self.currentListen;
+    message.callBack = callback;
+       
+    [arrayM addObject:message];
+    [self setListenArray:arrayM];
+    [self.listenLock unlock];
 }
 
 - (void)setListenArray:(NSMutableArray *)listenArray {
-    objc_setAssociatedObject(self, @selector(listenArray), listenArray, 3);
+    objc_setAssociatedObject(self, @selector(listenArray), listenArray, 1);
 }
 
 - (NSMutableArray *)listenArray {
-    NSMutableArray *array = objc_getAssociatedObject(self, _cmd);
-    if (array == nil) {
-        array = @[].mutableCopy;
-        objc_setAssociatedObject(self, _cmd, array, 3);
-    }
-    return array.mutableCopy;
+    return objc_getAssociatedObject(self, _cmd);
 }
 
 - (void)setCurrentListen:(NSString *)currentListen {
@@ -59,5 +58,25 @@
     return objc_getAssociatedObject(self, _cmd);
 }
 
+- (void)setListenLock:(NSLock *)listenLock {
+     objc_setAssociatedObject(self, @selector(listenLock), listenLock, 1);
+}
 
+- (NSLock *)listenLock {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
++ (void)load {
+    Method method1 = class_getInstanceMethod(self, NSSelectorFromString(@"dealloc"));
+    Method method2 = class_getInstanceMethod(self, @selector(_dealloc));
+    method_exchangeImplementations(method1, method2);
+}
+
+- (void)_dealloc {
+    if (self.listenArray) [self.listenArray removeAllObjects];
+}
+
+- (void)setMutex:(pthread_mutex_t)mutex {
+    
+}
 @end
