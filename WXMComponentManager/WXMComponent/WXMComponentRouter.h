@@ -4,19 +4,25 @@
 //
 //  Created by edz on 2019/4/24.
 //  Copyright © 2019年 wq. All rights reserved.
-/**
- 建议不同模块以NSDictionary作为参数传递 由模型转字典传递出去 接收方字典转模型
+
+
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+NS_ASSUME_NONNULL_BEGIN
+
+/**建议不同模块以NSDictionary作为参数传递 由模型转字典传递出去 接收方字典转模型
  NSString * url = @"parameter://WXMPhotoInterFaceProtocol/photoPermission";
  NSString * url = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
  NSString * url = @"push://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
  NSString * url = @"component://WXMPhotoInterFaceProtocol";
- NSString * url = @"sendMessage://WXMPhotoInterFaceProtocol/100";
- */
-
-#import <UIKit/UIKit.h>
-#import <Foundation/Foundation.h>
-
-NS_ASSUME_NONNULL_BEGIN
+ NSString * url = @"message://WXMPhotoInterFaceProtocol/100"; */
+typedef NS_ENUM(NSUInteger, WXMRouterType) {
+    WXMRouterType_component = 0,
+    WXMRouterType_push,
+    WXMRouterType_present,
+    WXMRouterType_parameter,
+    WXMRouterType_message,
+};
 
 typedef void (^RouterCallBack)(NSDictionary *_Nullable);
 @interface WXMComponentRouter : NSObject
@@ -46,14 +52,15 @@ typedef void (^RouterCallBack)(NSDictionary *_Nullable);
 - (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
 - (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/*2*/
 
-/** (初始化时)正向传递的回调数据 */
-- (void)callBackParameterWithTarget:(id)target parameter:(NSDictionary *)parameter;/*1*/
+#pragma mark 获取参数以及回调
 
-/** (接收消息时)正向传递的回调数据 */
-- (void)callBackMessageWithTarget:(id)target parameter:(NSDictionary *)parameter;/*2*/
-
-NS_ASSUME_NONNULL_END
+/** 获取参数 and 正向回调 */
+- (NSDictionary *(^)(id obj))parameter;
+- (NSString *(^)(WXMRouterType type, NSString *protocol, ...))createRoute; /** 生成路由 */
+- (WXMComponentRouter *(^)(id target, NSDictionary* _Nullable parameter))callBackForward;
+- (WXMComponentRouter *(^)(id target, NSDictionary* _Nullable parameter))callBackMessage;
 @end
 
+NS_ASSUME_NONNULL_END
 
 

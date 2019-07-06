@@ -25,8 +25,8 @@ class FDLrpc;\
 char * k##procotol##_ser \
 WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
 
-#define WXMCPManger [WXMComponentManager sharedInstance]
-#define WXMCPRouter [WXMComponentRouter sharedInstance]
+#define WXMMangerInstance [WXMComponentManager sharedInstance]
+#define WXMRouterInstance [WXMComponentRouter sharedInstance]
 
 /**  WXMPhotoInterFaceProtocol(100)
      WXMPhotoInterFaceProtocol(100,104,105)

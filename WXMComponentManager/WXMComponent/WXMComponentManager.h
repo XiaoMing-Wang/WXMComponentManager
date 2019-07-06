@@ -11,6 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static char managerCallback;
 @interface WXMComponentManager : NSObject
 
 + (instancetype)sharedInstance;

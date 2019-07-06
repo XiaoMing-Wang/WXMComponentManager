@@ -4,11 +4,14 @@
 //
 //  Created by edz on 2019/4/24.
 //  Copyright © 2019年 wq. All rights reserved.
-//
+
 #import <objc/runtime.h>
 #import "WXMComponentRouter.h"
 #import "WXMComponentHeader.h"
 #import "WXMParameterContext.h"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+#pragma clang diagnostic ignored "-Wundeclared-selector"
 
 typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeWhether = 0,
@@ -16,19 +19,17 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeJump = 2,
 };
 
-static char deliveryKey;
+static char parameterKey;
+static char callbackKey;
 @implementation WXMComponentRouter
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-#pragma clang diagnostic ignored "-Wundeclared-selector"
 
 + (instancetype)sharedInstance {
-    static WXMComponentRouter *router;
+    static WXMComponentRouter *_router;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        router = [[self alloc] init];
+        _router = [[self alloc] init];
     });
-    return router;
+    return _router;
 }
 
 /** 是否可以打开 */
@@ -86,7 +87,6 @@ static char deliveryKey;
 - (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
 
-        objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
         NSURL *urlUrl = [NSURL URLWithString:url];
         NSString *scheme = urlUrl.scheme;             /** 操作类型 */
         NSString *host = urlUrl.host;                 /** 第一路径 */
@@ -97,20 +97,6 @@ static char deliveryKey;
             return nil;
         }
         
-        /** 判断传递参数是什么类型 */
-        id parameter = nil;
-        BOOL isBlock = NO;
-        
-        if (passObj == nil) {
-            parameter = [self paramsWithString:query];
-        } else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
-            parameter = passObj;
-        } else {
-            /** block */
-            isBlock = YES;
-            parameter = passObj;
-        }
-        
         /** 剪切参数获取字符串 */
         NSString *protocol = [self protocol:host];
         NSString *action = [self action:relativePath];
@@ -118,7 +104,18 @@ static char deliveryKey;
             NSLog(@"url解析不出protocol或action");
             return nil;
         }
-          
+        
+        /** 判断传递参数是什么类型 */
+        id parameter = nil;
+        if (passObj == nil) {
+            parameter = [self paramsWithString:query];
+        } else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
+            parameter = passObj;
+        } else {
+            /** block */
+            parameter = passObj;
+        }
+        
         /** 获取service */
         Protocol *pro = NSProtocolFromString(protocol);
         id service = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:pro];
@@ -133,53 +130,54 @@ static char deliveryKey;
         }
         
         NSLog(@"成功调用");
+        id __target = nil;
         if (routerType == WXMRouterTypeWhether) {
             return @(YES);
         } else if (routerType == WXMRouterTypeParameter)  {
-            id obj = [service performSelector:selReal withObject:parameter];
-            if (isBlock) objc_setAssociatedObject(obj, &deliveryKey, parameter, policy);
-            return obj;
+            __target = [service performSelector:selReal withObject:parameter];
+            [self handleParametersWithTarget:__target parameters:parameter];
         } else if (routerType == WXMRouterTypeJump) {
             UIViewController <WXMComponentFeedBack>* vc = nil;
             vc = [service performSelector:selReal withObject:parameter];
-            if (isBlock) objc_setAssociatedObject(vc, &deliveryKey, parameter, policy);
-            [self jumpViewController:vc scheme:scheme obj:parameter];
+            [self handleParametersWithTarget:vc parameters:parameter];
+            [self jumpViewController:vc scheme:scheme];
         }
         
-        return nil;
-    } @catch (NSException *exception) {  NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally {}
+        return __target;
+    } @catch (NSException *exception) { NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally {}
+}
+
+/** 处理target参数 */
+- (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
+    if (parameter == nil || target == nil) return;
+    WXMParameterContext *context = [WXMParameterContext new];
+    BOOL isDictionary = [parameter isKindOfClass:NSDictionary.class];
+    objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
+    if (isDictionary) {
+        context.parameter = (NSDictionary *)parameter;
+        objc_setAssociatedObject(target, &parameterKey, parameter, policy);
+    } else {
+        context.callBack = (RouterCallBack)parameter;
+        objc_setAssociatedObject(target, &callbackKey, parameter, policy);
+    }
+    
+    if ([target respondsToSelector:@selector(wc_receiveParameters:)]) {
+        [target wc_receiveParameters:context];
+    }
 }
 
 /** 解析url 跳转viewcontroller */
-- (void)jumpViewController:(UIViewController <WXMComponentFeedBack>*)vc
-                    scheme:(NSString *)scheme
-                       obj:(id)obj {
-    
-    WXMParameterContext *context = [WXMParameterContext new];
-    if ([obj isKindOfClass:[NSDictionary class]] && obj) {
-        NSDictionary *parameters = (NSDictionary *)obj;
-        context.parameter = parameters;
-    } else if(obj != nil) {
-        RouterCallBack callBack = (RouterCallBack)obj;
-        context.callBack = callBack;
-    }
-    
-    if (vc && [vc isKindOfClass:[UIViewController class]]) {
-        if ([vc respondsToSelector:@selector(wc_receiveParameters:)]) {
-            [vc wc_receiveParameters:context];
-        }
+- (void)jumpViewController:(UIViewController <WXMComponentFeedBack>*)vc scheme:(NSString *)scheme {
+    if ([scheme isEqualToString:@"push"]) {
+        [self.currentNavigationController pushViewController:vc animated:YES];
+    } else if ([scheme isEqualToString:@"present"]) {
+        [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
+    } else if ([scheme isEqualToString:@""]) {
         
-        if ([scheme isEqualToString:@"push"]) {
-            [self.currentNavigationController pushViewController:vc animated:YES];
-        } else if ([scheme isEqualToString:@"present"]) {
-            [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
-        } else if ([scheme isEqualToString:@""]) {
-            
-        }
     }
 }
 
-/** 根判断2(直接返回controller) */
+/** 根判断2(controller即service) */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url obj:(id _Nullable)obj {
     NSURL *urlUrl = [NSURL URLWithString:url];
     NSString *scheme = urlUrl.scheme;             /** 操作类型 */
@@ -194,19 +192,7 @@ static char deliveryKey;
         Protocol *pro = NSProtocolFromString(protocol);
         UIViewController <WXMComponentFeedBack>*controller = nil;
         controller = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:pro];
-        
-        WXMParameterContext *context = [WXMParameterContext new];
-        if ([obj isKindOfClass:[NSDictionary class]] && obj) {
-            NSDictionary *parameters = (NSDictionary *)obj;
-            context.parameter = parameters;
-        } else if(obj != nil) {
-            RouterCallBack callBack = (RouterCallBack)obj;
-            context.callBack = callBack;
-        }
-        
-        if ([controller respondsToSelector:@selector(wc_receiveParameters:)]) {
-            [controller wc_receiveParameters:context];
-        }
+        [self handleParametersWithTarget:controller parameters:obj];
         return controller ?: nil;
     } @catch (NSException *exception) { NSLog(@"viewControllerWithUrl判断崩溃 !!!"); } @finally {}
 }
@@ -229,16 +215,55 @@ static char deliveryKey;
     } @catch (NSException *exception) { NSLog(@"sendMessageWith判断崩溃 !!!!!!!"); } @finally {};
 }
 
-/** (初始化时)正向传递的回调数据 */
-- (void)callBackParameterWithTarget:(id)target parameter:(NSDictionary *)parameter {
-    RouterCallBack callback = objc_getAssociatedObject(target, &deliveryKey);
-    if (callback) callback(parameter);
+#pragma mark 获取参数以及回调
+
+/** 获取参数 */
+- (NSDictionary *(^)(id obj))parameter {
+    return ^NSDictionary *(id obj) {
+        return objc_getAssociatedObject(obj, &parameterKey);
+    };
 }
 
-- (void)callBackMessageWithTarget:(id)target parameter:(NSDictionary *)parameter {
-    NSString *key = NSStringFromClass(WXMComponentManager.class);
-    RouterCallBack callback = objc_getAssociatedObject(target, CFBridgingRetain(key));
-    if (callback) callback(parameter);
+/** 正向回调 */
+- (WXMComponentRouter * (^)(id target, NSDictionary* _Nullable parameter))callBackForward {
+    return ^WXMComponentRouter *(id target, NSDictionary *parameter) {
+        RouterCallBack callback = objc_getAssociatedObject(target, &callbackKey);
+        if (callback) callback(parameter);
+        return self;
+    };
+}
+
+/** 消息回调 */
+- (WXMComponentRouter *(^)(id target, NSDictionary* _Nullable parameter))callBackMessage {
+    return ^WXMComponentRouter *(id target, NSDictionary *parameter) {
+        RouterCallBack callback = objc_getAssociatedObject(target, &managerCallback);
+        if (callback) callback(parameter);
+        return self;
+    };
+}
+
+/** 生成路由 */
+- (NSString *(^)(WXMRouterType type, NSString *protocol, ...))createRoute {
+    return ^NSString *(WXMRouterType type, NSString *protocol, ...) {
+        NSString *header = @"";
+        if (type == WXMRouterType_component) header = @"component";
+        if (type == WXMRouterType_push) header = @"push";
+        if (type == WXMRouterType_present) header = @"present";
+        if (type == WXMRouterType_parameter) header = @"parameter";
+        if (type == WXMRouterType_message) header = @"message";
+        if (header.length == 0) return nil;
+        NSString *aString = [NSString stringWithFormat:@"%@://%@",header,protocol];
+        va_list params;
+        va_start(params, protocol);
+        NSString *arg;
+        if (protocol) {
+            while ((arg = va_arg(params, NSString *))) {
+                if (arg) aString = [NSString stringWithFormat:@"%@/%@",aString,arg];
+            }
+            va_end(params);
+        }
+        return aString;
+    };
 }
 
 /** 获取参数 */

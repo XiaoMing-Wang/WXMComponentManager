@@ -61,6 +61,8 @@
     
     target = [NSClassFromString(targetString) new];
     if ([target conformsToProtocol:protocol] && target) {
+        
+        /** 目前存在的实例对象 发送消息使用 弱引用 */
         [self.allInstanceTarget addPointer:(__bridge void *_Nullable)(target)];
         
         /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
@@ -125,10 +127,9 @@
                     context.parameter = parameters;
                 } else if(eventObj != nil) {
                     objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
-                    NSString *key = NSStringFromClass(self.class);
                     RouterCallBack callBack = (RouterCallBack) eventObj;
                     context.callBack = callBack;
-                    objc_setAssociatedObject(obj, CFBridgingRetain(key), callBack, policy);
+                    objc_setAssociatedObject(obj, &managerCallback, callBack, policy);
                 }
                 [obj wc_receivesMessageWithEventModule:context];
             }
