@@ -5,7 +5,6 @@
 //  Created by wq on 2019/4/19.
 //  Copyright © 2019年 wq. All rights reserved.
 //
-
 #import <objc/runtime.h>
 #include <mach-o/getsect.h>
 #include <mach-o/loader.h>
@@ -102,6 +101,7 @@
 
 /** 发送消息 */
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj {
+    
     static dispatch_once_t onceToken;
     static dispatch_semaphore_t lock;
     dispatch_once(&onceToken, ^{

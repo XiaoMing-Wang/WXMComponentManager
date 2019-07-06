@@ -8,10 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "WXMAllComponentProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static char managerCallback;
+
 @interface WXMComponentManager : NSObject
 
 + (instancetype)sharedInstance;
@@ -26,7 +28,7 @@ static char managerCallback;
 
 /** 发送消息 module模块类 event事件 */
 - (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj;
-
+- (void)sendEventModule:(WXM_MESSAGE)identify eventObj:(id)eventObj;
 @end
 
 NS_ASSUME_NONNULL_END

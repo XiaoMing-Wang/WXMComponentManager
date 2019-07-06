@@ -28,11 +28,6 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
 #define WXMMangerInstance [WXMComponentManager sharedInstance]
 #define WXMRouterInstance [WXMComponentRouter sharedInstance]
 
-/**  WXMPhotoInterFaceProtocol(100)
-     WXMPhotoInterFaceProtocol(100,104,105)
-     WXMPhotoInterFaceProtocol(100-200)
-     WXMPhotoInterFaceProtocol(100-105,200)
-     WXMPhotoInterFaceProtocol(-) */
 /** 模块交互协议需要处理消息的遵循该协议  */
 @protocol WXMComponentFeedBack <NSObject>
 @optional

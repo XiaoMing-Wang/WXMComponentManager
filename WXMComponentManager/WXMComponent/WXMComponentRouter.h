@@ -11,11 +11,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**建议不同模块以NSDictionary作为参数传递 由模型转字典传递出去 接收方字典转模型
- NSString * url = @"parameter://WXMPhotoInterFaceProtocol/photoPermission";
- NSString * url = @"present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
- NSString * url = @"push://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController";
- NSString * url = @"component://WXMPhotoInterFaceProtocol";
- NSString * url = @"message://WXMPhotoInterFaceProtocol/100"; */
+ parameter://WXMPhotoInterFaceProtocol/photoPermission
+ present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController
+ push://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController
+ component://WXMPhotoInterFaceProtocol
+ message://WXMPhotoInterFaceProtocol/100
+ */
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0,
     WXMRouterType_push,
@@ -45,12 +46,12 @@ typedef void (^RouterCallBack)(NSDictionary *_Nullable);
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/*1*/
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack; /*1*/
 
 /** 发消息 */
 - (void)sendMessageWithUrl:(NSString *)url;
 - (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;/*2*/
+- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack; /*2*/
 
 #pragma mark 获取参数以及回调
 
