@@ -8,15 +8,7 @@
 
 #import "WXMComponentData.h"
 
-@implementation WXMParameterObject
-
-@end
-
-@implementation WXMSignalObject
-
-@end
-
-@implementation WXMListenObject
-
-@end
+@implementation WXMParameterObject @end
+@implementation WXMSignalObject @end
+@implementation WXMListenObject @end
 

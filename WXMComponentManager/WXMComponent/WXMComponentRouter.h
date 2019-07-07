@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
 
-/** 发消息 */
+/** 发信号 */
 - (void)sendMessageWithUrl:(NSString *)url;
 - (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
 - (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
