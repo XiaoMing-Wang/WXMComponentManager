@@ -8,7 +8,8 @@
 #import <objc/runtime.h>
 #import "WXMComponentRouter.h"
 #import "WXMComponentHeader.h"
-#import "WXMParameterContext.h"
+#import "WXMComponentContext.h"
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wundeclared-selector"
@@ -19,8 +20,6 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeJump = 2,
 };
 
-static char parameterKey;
-static char callbackKey;
 @implementation WXMComponentRouter
 
 + (instancetype)sharedInstance {
@@ -150,20 +149,7 @@ static char callbackKey;
 /** 处理target参数 */
 - (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
     if (parameter == nil || target == nil) return;
-    WXMParameterContext *context = [WXMParameterContext new];
-    BOOL isDictionary = [parameter isKindOfClass:NSDictionary.class];
-    objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
-    if (isDictionary) {
-        context.parameter = (NSDictionary *)parameter;
-        objc_setAssociatedObject(target, &parameterKey, parameter, policy);
-    } else {
-        context.callBack = (RouterCallBack)parameter;
-        objc_setAssociatedObject(target, &callbackKey, parameter, policy);
-    }
-    
-    if ([target respondsToSelector:@selector(wc_receiveParameters:)]) {
-        [target wc_receiveParameters:context];
-    }
+    [WXMComponentContext handleParametersWithTarget:target parameters:parameter];
 }
 
 /** 解析url 跳转viewcontroller */
@@ -202,44 +188,15 @@ static char callbackKey;
     NSURL *urlUrl = [NSURL URLWithString:url];
     NSString *scheme = urlUrl.scheme;             /** 操作类型 */
     NSString *host = urlUrl.host;                 /** 第一路径 */
-    NSString *relativePath = urlUrl.relativePath; /** 第二路径 */
-    if (!relativePath || !urlUrl || !host || !scheme || ![scheme isEqualToString:@"sendMessage"]) {
+    if (!urlUrl || !host || !scheme || ![scheme isEqualToString:@"sendMessage"]) {
         NSLog(@"不是正确的url");
         return;
     }
     
     @try {
-        relativePath = [self action:relativePath];
         WXMComponentManager * man = [WXMComponentManager sharedInstance];
-        [man sendEventModule:host event:relativePath.integerValue eventObj:event];
+        [man sendEventModule:host eventObj:event];
     } @catch (NSException *exception) { NSLog(@"sendMessageWith判断崩溃 !!!!!!!"); } @finally {};
-}
-
-#pragma mark 获取参数以及回调
-
-/** 获取参数 */
-- (NSDictionary *(^)(id obj))parameter {
-    return ^NSDictionary *(id obj) {
-        return objc_getAssociatedObject(obj, &parameterKey);
-    };
-}
-
-/** 正向回调 */
-- (WXMComponentRouter * (^)(id target, NSDictionary* _Nullable parameter))callBackForward {
-    return ^WXMComponentRouter *(id target, NSDictionary *parameter) {
-        RouterCallBack callback = objc_getAssociatedObject(target, &callbackKey);
-        if (callback) callback(parameter);
-        return self;
-    };
-}
-
-/** 消息回调 */
-- (WXMComponentRouter *(^)(id target, NSDictionary* _Nullable parameter))callBackMessage {
-    return ^WXMComponentRouter *(id target, NSDictionary *parameter) {
-        RouterCallBack callback = objc_getAssociatedObject(target, &managerCallback);
-        if (callback) callback(parameter);
-        return self;
-    };
 }
 
 /** 生成路由 */
@@ -250,7 +207,7 @@ static char callbackKey;
         if (type == WXMRouterType_push) header = @"push";
         if (type == WXMRouterType_present) header = @"present";
         if (type == WXMRouterType_parameter) header = @"parameter";
-        if (type == WXMRouterType_message) header = @"message";
+        if (type == WXMRouterType_signal) header = @"signal";
         if (header.length == 0) return nil;
         NSString *aString = [NSString stringWithFormat:@"%@://%@",header,protocol];
         va_list params;

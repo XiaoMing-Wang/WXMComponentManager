@@ -74,9 +74,7 @@
         return target;
     }
     
-#ifdef DEBUG
     [self showAlertController:protosString];
-#endif
     return nil;
 }
 
@@ -99,9 +97,14 @@
     [self.cacheTarget removeObjectForKey:targetString];
 }
 
+/** 添加一个接收者 */
+- (void)addSignalReceive:(id)target {
+    if (!target) return;
+    [self.allInstanceTarget addPointer:(__bridge void *_Nullable)(target)];
+}
+
 /** 发送消息 */
-- (void)sendEventModule:(NSString *)module event:(NSInteger)event eventObj:(id)eventObj {
-    
+- (void)sendEventModule:(WXM_SIGNAL)identify eventObj:(id)eventObj {
     static dispatch_once_t onceToken;
     static dispatch_semaphore_t lock;
     dispatch_once(&onceToken, ^{
@@ -111,78 +114,40 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         for (id<WXMComponentFeedBack> obj in self.allInstanceTarget) {
             if (!obj || obj == self) return;
-        
-            BOOL response = YES;
-            if ([obj respondsToSelector:@selector(modules_events)]) {
-                NSArray *array = [obj wc_modules_events];
-                response = [self determineWhetherSend:module event:event modulearray:array];
+            
+            WXMSignalObject *signalObject = [WXMSignalObject new];
+            signalObject.signalName = identify;
+            if ([eventObj isKindOfClass:[NSDictionary class]] && eventObj) {
+                signalObject.parameter = (NSDictionary *)eventObj;
+            } else if(eventObj != nil) {
+                signalObject.callback = (RouterCallBack) eventObj;
             }
             
-            if ([obj respondsToSelector:@selector(wc_receivesMessageWithEventModule:)]) {
-                WXMMessageContext *context = [WXMMessageContext new];
-                context.module = module;
-                context.event = event;
-                if ([eventObj isKindOfClass:[NSDictionary class]] && eventObj) {
-                    NSDictionary *parameters = (NSDictionary *)eventObj;
-                    context.parameter = parameters;
-                } else if(eventObj != nil) {
-                    objc_AssociationPolicy policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC;
-                    RouterCallBack callBack = (RouterCallBack) eventObj;
-                    context.callBack = callBack;
-                    objc_setAssociatedObject(obj, &managerCallback, callBack, policy);
+            /** 信息传递方式1.协议 */
+            /** 信息传递方式1.协议 */
+            /** 信息传递方式1.协议 */
+            if ([obj respondsToSelector:@selector(wc_signals)]) {
+                NSArray <WXM_SIGNAL>*signalArray = [obj wc_signals];
+                if ([signalArray isKindOfClass:NSArray.class] && signalArray.count > 0){
+                    BOOL exist = [signalArray containsObject:identify];
+                    BOOL response = [obj respondsToSelector:@selector(wc_receivesSignalObject:)];
+                    if (exist && response) [obj wc_receivesSignalObject:signalObject];
                 }
-                [obj wc_receivesMessageWithEventModule:context];
             }
+            
+            /** 信息传递方式2.信号 */
+            /** 信息传递方式2.信号 */
+            /** 信息传递方式2.信号 */
+            [WXMComponentContext handleSignalWithTarget:obj signalObject:signalObject];
         }
     });
     
     dispatch_semaphore_signal(lock);
 }
 
-/** 判断是否响应 */
-- (BOOL)determineWhetherSend:(NSString *)module
-                       event:(NSInteger)event
-                 modulearray:(NSArray *)modulearray {
-    NSString * module_event = [NSString stringWithFormat:@"%@(%zd)",module,event];
-    NSString * module_all = [NSString stringWithFormat:@"%@(-)",module];
-    if (modulearray == nil) return NO;
-    if ([modulearray containsObject:module_all]) return YES;
-    if ([modulearray containsObject:module_event]) return YES;
-    
-    /** 不支持数组里有多个相同协议头的string 会增加遍历次数 */
-    __block BOOL response = NO;
-    [modulearray enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL *stop) {
-        if ([obj hasPrefix:module]) {
-            NSString * number = [obj stringByReplacingOccurrencesOfString:module withString:@""];
-            response = [self matchingEvent:event qualified:number];
-            *stop = YES;
-        }
-    }];
-    return response;
-}
-
-- (BOOL)matchingEvent:(NSInteger)event qualified:(NSString *)qualified {
-    __block BOOL response = NO;
-    NSString *eventString = @(event).stringValue;
-    qualified = [qualified stringByReplacingOccurrencesOfString:@"(" withString:@""];
-    qualified = [qualified stringByReplacingOccurrencesOfString:@")" withString:@""];
-    NSArray *numberArray = [qualified componentsSeparatedByString:@","];
-    if ([numberArray containsObject:eventString]) return YES;
-    [numberArray enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * stop) {
-        if ([obj containsString:@"-"]) {
-            NSInteger start = [obj componentsSeparatedByString:@"-"].firstObject.integerValue;
-            NSInteger end = [obj componentsSeparatedByString:@"-"].lastObject.integerValue;
-            if (event >= start && event <= end) {
-                response = YES;
-                *stop = YES;
-            }
-        }
-    }];
-    return response;
-}
-
 /** 显示弹窗 */
 - (void)showAlertController:(NSString *)title {
+    if(WXMDEBUG == NO) return;
     UIAlertController *aler = nil;
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     NSString * msg = [NSString stringWithFormat:@"协议:%@ 没有注册",title];
