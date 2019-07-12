@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-@interface WXMComponentSignContext : NSObject
+@interface WXMComponentSignalContext : NSObject
+
+
 
 @end

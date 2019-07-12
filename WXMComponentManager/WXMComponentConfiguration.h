@@ -27,6 +27,7 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
 /** 信号枚举类型 */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
 typedef void (^RouterCallBack)(NSDictionary * _Nullable params);
+typedef void (^SignalCallBack)(NSDictionary * _Nullable params);
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0, /** viewcontroller */
     WXMRouterType_push,          /** push */

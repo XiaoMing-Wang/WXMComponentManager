@@ -6,8 +6,8 @@
 //  Copyright © 2019年 wxm. All rights reserved.
 //
 
-#import "WXMComponentSignContext.h"
+#import "WXMComponentSignalContext.h"
 
-@implementation WXMComponentSignContext
+@implementation WXMComponentSignalContext
 
 @end
