@@ -32,23 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 /** 打开url 例 push直接跳转 */
 - (void)openUrl:(NSString *)url;
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;
+- (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
 
 /** 返回结果(模块实现类实现协议) */
 - (id)resultsOpenUrl:(NSString *)url;
 - (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack;
+- (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
 
 /** controller作为实现协议对象 */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
-
-/** 发信号 */
-- (void)sendMessageWithUrl:(NSString *)url;
-- (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack;
-
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(SignalCallBack)callBack;
 @end
 
 NS_ASSUME_NONNULL_END

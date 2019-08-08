@@ -13,20 +13,21 @@ NS_ASSUME_NONNULL_BEGIN
 /** 路由传递参数对象 */
 @interface WXMParameterObject : NSObject
 @property (nonatomic, copy) NSDictionary *parameter;
-@property (nonatomic, copy) RouterCallBack callback;
+@property (nonatomic, copy) SignalCallBack callback;
 @end
 
 /** 模块发送信号对象 */
-@interface WXMSignalObject : NSObject
-@property (nonatomic, copy) WXM_SIGNAL signalName;
+@interface WXMSignal : NSObject
+@property (nonatomic, copy) WXM_SIGNAL signal;
 @property (nonatomic, copy) NSDictionary *parameter;
-@property (nonatomic, copy) RouterCallBack callback;
+@property (nonatomic, strong) id object;
+- (void)sendNext:(id)parameter;
 @end
 
 /** 监听者对象 */
 @interface WXMListenObject : NSObject
-@property (nonatomic, copy) NSString *listenKey;
-@property (nonatomic, copy) RouterCallBack callback;
+@property (nonatomic, copy) WXM_SIGNAL signal;
+@property (nonatomic, copy) ObserveCallBack callback;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -5,13 +5,14 @@
 //  Created by edz on 2019/7/7.
 //  Copyright © 2019 wq. All rights reserved.
 //
-
+#define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
+#define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
 #ifndef WXMComponentConfiguration_h
 #define WXMComponentConfiguration_h
 NS_ASSUME_NONNULL_BEGIN
 
 @class WXMParameterObject;
-@class WXMSignalObject;
+@class WXMSignal;
 
 /** 存在data区字段 */
 #define WXMDEBUG DEBUG
@@ -26,8 +27,8 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
 
 /** 信号枚举类型 */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
-typedef void (^RouterCallBack)(NSDictionary * _Nullable params);
-typedef void (^SignalCallBack)(NSDictionary * _Nullable params);
+typedef void (^SignalCallBack)(id params);
+typedef void (^ObserveCallBack)(WXMSignal *signal);
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0, /** viewcontroller */
     WXMRouterType_push,          /** push */
@@ -50,7 +51,7 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 - (void)wc_receiveParameters:(WXMParameterObject *)obj;
 
 /** 接收其他模块发出的消息 */
-- (void)wc_receivesSignalObject:(WXMSignalObject *)obj;
+- (void)wc_receivesSignalObject:(WXMSignal *)obj;
 
 @end
 

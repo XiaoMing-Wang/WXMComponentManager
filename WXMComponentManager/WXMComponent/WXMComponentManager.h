@@ -23,11 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
 - (void)removeServiceCacheForProtocol:(Protocol *)protocol;
 
-/** 添加信号接收者  */
-- (void)addSignalReceive:(id)target;
-
-/** 发送信号 */
-- (void)sendEventModule:(WXM_SIGNAL)identify eventObj:(nullable id)eventObj;
 @end
 
 NS_ASSUME_NONNULL_END

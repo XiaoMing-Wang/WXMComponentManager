@@ -8,7 +8,7 @@
 #import <objc/runtime.h>
 #import "WXMComponentRouter.h"
 #import "WXMComponentHeader.h"
-#import "WXMComponentContext.h"
+#import "WXMComponentBridge.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -45,7 +45,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     [self openUrl:url passObj:params routerType:WXMRouterTypeJump];
 }
-- (void)openUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack {
+- (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
     [self openUrl:url passObj:callBack routerType:WXMRouterTypeJump];
 }
 
@@ -56,7 +56,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     return [self openUrl:url passObj:params routerType:WXMRouterTypeParameter];
 }
-- (id)resultsOpenUrl:(NSString *)url callBack:(RouterCallBack _Nullable)callBack {
+- (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
     return [self openUrl:url passObj:callBack routerType:WXMRouterTypeParameter];
 }
 
@@ -67,19 +67,8 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
     return [self viewControllerWithUrl:url obj:params];
 }
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(RouterCallBack)callBack {
+- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(SignalCallBack)callBack {
     return [self viewControllerWithUrl:url obj:callBack];
-}
-
-/** 发送消息 */
-- (void)sendMessageWithUrl:(NSString *)url {
-    [self sendMessageWithUrl:url event_id:nil];
-}
-- (void)sendMessageWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
-    [self sendMessageWithUrl:url event_id:params];
-}
-- (void)sendMessageWithUrl:(NSString *)url callBack:(RouterCallBack)callBack {
-    [self sendMessageWithUrl:url event_id:callBack];
 }
 
 /** 根判断1 */
@@ -111,8 +100,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         } else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
             parameter = passObj;
         } else {
-            /** block */
-            parameter = passObj;
+            parameter = passObj;  /** block */
         }
         
         /** 获取service */
@@ -149,7 +137,9 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 /** 处理target参数 */
 - (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
     if (parameter == nil || target == nil) return;
-    [WXMComponentContext handleParametersWithTarget:target parameters:parameter];
+    
+    /** Bridge对象处理参数和回调 */
+    [WXMComponentBridge handleParametersWithTarget:target parameters:parameter];
 }
 
 /** 解析url 跳转viewcontroller */
@@ -183,22 +173,6 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     } @catch (NSException *exception) { NSLog(@"viewControllerWithUrl判断崩溃 !!!"); } @finally {}
 }
 
-/** 根判断3(发送消息) */
-- (void)sendMessageWithUrl:(NSString *)url event_id:(_Nullable id)event {
-    NSURL *urlUrl = [NSURL URLWithString:url];
-    NSString *scheme = urlUrl.scheme;             /** 操作类型 */
-    NSString *host = urlUrl.host;                 /** 第一路径 */
-    if (!urlUrl || !host || !scheme || ![scheme isEqualToString:@"sendMessage"]) {
-        NSLog(@"不是正确的url");
-        return;
-    }
-    
-    @try {
-        WXMComponentManager * man = [WXMComponentManager sharedInstance];
-        [man sendEventModule:host eventObj:event];
-    } @catch (NSException *exception) { NSLog(@"sendMessageWith判断崩溃 !!!!!!!"); } @finally {};
-}
-
 /** 生成路由 */
 - (NSString *(^)(WXMRouterType type, NSString *protocol, ...))createRoute {
     return ^NSString *(WXMRouterType type, NSString *protocol, ...) {
@@ -210,6 +184,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         if (type == WXMRouterType_signal) header = @"signal";
         if (header.length == 0) return nil;
         NSString *aString = [NSString stringWithFormat:@"%@://%@",header,protocol];
+        
         va_list params;
         va_start(params, protocol);
         NSString *arg;

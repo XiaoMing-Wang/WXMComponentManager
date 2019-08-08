@@ -97,54 +97,6 @@
     [self.cacheTarget removeObjectForKey:targetString];
 }
 
-/** 添加一个接收者 */
-- (void)addSignalReceive:(id)target {
-    if (!target) return;
-    [self.allInstanceTarget addPointer:(__bridge void *_Nullable)(target)];
-}
-
-/** 发送消息 */
-- (void)sendEventModule:(WXM_SIGNAL)identify eventObj:(id)eventObj {
-    static dispatch_once_t onceToken;
-    static dispatch_semaphore_t lock;
-    dispatch_once(&onceToken, ^{
-        lock = dispatch_semaphore_create(1);
-    });
-    dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        for (id<WXMComponentFeedBack> obj in self.allInstanceTarget) {
-            if (!obj || obj == self) return;
-            
-            WXMSignalObject *signalObject = [WXMSignalObject new];
-            signalObject.signalName = identify;
-            if ([eventObj isKindOfClass:[NSDictionary class]] && eventObj) {
-                signalObject.parameter = (NSDictionary *)eventObj;
-            } else if(eventObj != nil) {
-                signalObject.callback = (RouterCallBack) eventObj;
-            }
-            
-            /** 信息传递方式1.协议 */
-            /** 信息传递方式1.协议 */
-            /** 信息传递方式1.协议 */
-            if ([obj respondsToSelector:@selector(wc_signals)]) {
-                NSArray <WXM_SIGNAL>*signalArray = [obj wc_signals];
-                if ([signalArray isKindOfClass:NSArray.class] && signalArray.count > 0){
-                    BOOL exist = [signalArray containsObject:identify];
-                    BOOL response = [obj respondsToSelector:@selector(wc_receivesSignalObject:)];
-                    if (exist && response) [obj wc_receivesSignalObject:signalObject];
-                }
-            }
-            
-            /** 信息传递方式2.信号 */
-            /** 信息传递方式2.信号 */
-            /** 信息传递方式2.信号 */
-            [WXMComponentContext handleSignalWithTarget:obj signalObject:signalObject];
-        }
-    });
-    
-    dispatch_semaphore_signal(lock);
-}
-
 /** 显示弹窗 */
 - (void)showAlertController:(NSString *)title {
     if(WXMDEBUG == NO) return;

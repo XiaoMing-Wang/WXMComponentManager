@@ -7,17 +7,23 @@
 
 #define WXMRouterInstance [WXMComponentRouter sharedInstance]
 #define WXMMangerInstance [WXMComponentManager sharedInstance]
-#define WXMContextObserve(target,signal) WXMComponentContext.observe(target,signal)
-#define WXMContextParameter(target) WXMComponentContext.parameter(target)
-#define WXMContextCallBackForward(target,parameter)\
-WXMComponentContext.callBackForward(target,parameter)
 
+#define WXMBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
+#define WXMBridgeSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)
+
+#define WXMBridgeParameter(target) WXMComponentBridge.parameter(target)
+#define WXMBridgeCallBackForward(target,parameter) \
+WXMComponentBridge.parameter.callBackForward(target,parameter)
+
+#import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"
-#import "WXMComponentContext.h"
 #import "WXMComponentManager.h"
+#import "WXMComponentBridgeContext.h"
+
 #import "WXMComponentData.h"
 #import "WXMComponentAnnotation.h"
 #import "WXMComponentConfiguration.h"
+
 #import "WXMAllComponentProtocol.h"
 
 
