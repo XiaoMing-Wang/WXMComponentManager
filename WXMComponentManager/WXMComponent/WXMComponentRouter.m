@@ -13,7 +13,6 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-
 typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeWhether = 0,
     WXMRouterTypeParameter = 1,
@@ -38,17 +37,6 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     return NO;
 }
 
-/** 直接打开url */
-- (void)openUrl:(NSString *)url {
-    [self openUrl:url passObj:nil routerType:WXMRouterTypeJump];
-}
-- (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
-    [self openUrl:url passObj:params routerType:WXMRouterTypeJump];
-}
-- (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
-    [self openUrl:url passObj:callBack routerType:WXMRouterTypeJump];
-}
-
 /** 返回结果(模块实现类实现协议方法) */
 - (id)resultsOpenUrl:(NSString *)url {
     return [self openUrl:url passObj:nil routerType:WXMRouterTypeParameter];
@@ -58,6 +46,17 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 }
 - (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
     return [self openUrl:url passObj:callBack routerType:WXMRouterTypeParameter];
+}
+
+/** 直接打开url */
+- (void)openUrl:(NSString *)url {
+    [self openUrl:url passObj:nil routerType:WXMRouterTypeJump];
+}
+- (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
+    [self openUrl:url passObj:params routerType:WXMRouterTypeJump];
+}
+- (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
+    [self openUrl:url passObj:callBack routerType:WXMRouterTypeJump];
 }
 
 /** controller作为实现协议对象 */
@@ -71,17 +70,37 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     return [self viewControllerWithUrl:url obj:callBack];
 }
 
+/** controller作为实现协议对象 */
+- (void)openViewController:(NSString *)url {
+    NSString *scheme = [NSURL URLWithString:url].scheme;
+    if (!scheme) return;
+    UIViewController *controller = [self viewControllerWithUrl:url];
+    [self jumpViewController:controller scheme:scheme];
+}
+- (void)openViewController:(NSString *)url params:(NSDictionary *_Nullable)params {
+    NSString *scheme = [NSURL URLWithString:url].scheme;
+    if (!scheme) return;
+    UIViewController *controller = [self viewControllerWithUrl:url params:params];
+    [self jumpViewController:controller scheme:scheme];
+}
+- (void)openViewController:(NSString *)url callBack:(SignalCallBack)callBack {
+    NSString *scheme = [NSURL URLWithString:url].scheme;
+    if (!scheme) return;
+    UIViewController *controller = [self viewControllerWithUrl:url callBack:callBack];
+    [self jumpViewController:controller scheme:scheme];
+}
+
 /** 根判断1 */
 - (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
-
+        
         NSURL *urlUrl = [NSURL URLWithString:url];
         NSString *scheme = urlUrl.scheme;             /** 操作类型 */
         NSString *host = urlUrl.host;                 /** 第一路径 */
         NSString *relativePath = urlUrl.relativePath; /** 第二路径 */
         NSString *query = urlUrl.query;               /** 参数 */
         if (!relativePath || !urlUrl || !host || !scheme) {
-            NSLog(@"不是正确的url");
+            if (WXMDEBUG) NSLog(@"不是正确的url");
             return nil;
         }
         
@@ -89,7 +108,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         NSString *protocol = [self protocol:host];
         NSString *action = [self action:relativePath];
         if (!protocol || !action) {
-            NSLog(@"url解析不出protocol或action");
+            if (WXMDEBUG) NSLog(@"url解析不出protocol或action");
             return nil;
         }
         
@@ -110,13 +129,13 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         SEL selSuffix = NSSelectorFromString([action stringByAppendingString:@":"]);
         SEL selReal = [service respondsToSelector:sel] ? sel : selSuffix;
         if (!service || !selReal || ![service respondsToSelector:selReal]) {
-           if (!service) NSLog(@"无法生成service类");
-           if (!selReal) NSLog(@"无法生成action函数");
-           if (![service respondsToSelector:selReal]) NSLog(@"service无法无法响应这个函数");
+            if (!service && WXMDEBUG) NSLog(@"无法生成service类");
+            if (!selReal && WXMDEBUG) NSLog(@"无法生成action函数");
+            if (![service respondsToSelector:selReal] && WXMDEBUG) NSLog(@"service无法无法响应这个函数");
             return nil;
         }
         
-        NSLog(@"成功调用");
+        if (WXMDEBUG) NSLog(@"成功调用");
         id __target = nil;
         if (routerType == WXMRouterTypeWhether) {
             return @(YES);
@@ -131,26 +150,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         }
         
         return __target;
-    } @catch (NSException *exception) { NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally {}
-}
-
-/** 处理target参数 */
-- (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
-    if (parameter == nil || target == nil) return;
-    
-    /** Bridge对象处理参数和回调 */
-    [WXMComponentBridge handleParametersWithTarget:target parameters:parameter];
-}
-
-/** 解析url 跳转viewcontroller */
-- (void)jumpViewController:(UIViewController <WXMComponentFeedBack>*)vc scheme:(NSString *)scheme {
-    if ([scheme isEqualToString:@"push"]) {
-        [self.currentNavigationController pushViewController:vc animated:YES];
-    } else if ([scheme isEqualToString:@"present"]) {
-        [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
-    } else if ([scheme isEqualToString:@""]) {
-        
-    }
+    } @catch (NSException *exception) { if (WXMDEBUG) NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally {}
 }
 
 /** 根判断2(controller即service) */
@@ -158,8 +158,8 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     NSURL *urlUrl = [NSURL URLWithString:url];
     NSString *scheme = urlUrl.scheme;             /** 操作类型 */
     NSString *host = urlUrl.host;                 /** 第一路径 */
-    if (!scheme || !host || ![scheme isEqualToString:@"component"]) {
-        NSLog(@"不是正确的url");
+    if (!scheme || !host) {
+        if (WXMDEBUG) NSLog(@"不是正确的url");
         return nil;
     }
     
@@ -171,6 +171,26 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         [self handleParametersWithTarget:controller parameters:obj];
         return controller ?: nil;
     } @catch (NSException *exception) { NSLog(@"viewControllerWithUrl判断崩溃 !!!"); } @finally {}
+}
+
+/** 处理target参数 */
+- (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
+    if (parameter == nil || target == nil) return;
+    
+    /** Bridge对象处理参数和回调 */
+    [WXMComponentBridge handleParametersWithTarget:target parameters:parameter];
+}
+
+/** 解析url 跳转viewcontroller */
+- (void)jumpViewController:(UIViewController *)vc scheme:(NSString *)scheme {
+    if (!vc) return;
+    if ([scheme isEqualToString:@"push"]) {
+        [self.currentNavigationController pushViewController:vc animated:YES];
+    } else if ([scheme isEqualToString:@"present"]) {
+        [self.currentNavigationController presentViewController:vc animated:YES completion:nil];
+    } else if ([scheme isEqualToString:@""]) {
+        
+    }
 }
 
 /** 生成路由 */

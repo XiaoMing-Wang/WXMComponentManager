@@ -47,7 +47,7 @@
 - (void)addService:(NSString *)service protocol:(NSString *)protocol {
     if (!self.registeredDic) self.registeredDic = @{}.mutableCopy;
     if (!self.cacheTarget) self.cacheTarget = @{}.mutableCopy;
-    [self.registeredDic setValue:service forKey:protocol];
+    if (service && protocol) [self.registeredDic setObject:service forKey:protocol];
     NSLog(@"%@ ----- %@",service,protocol);
 }
 
@@ -68,8 +68,8 @@
         BOOL needCache = NO;
         SEL cacheImp = @selector(wc_cacheImplementer);
         if ([target respondsToSelector:cacheImp]) needCache = [target wc_cacheImplementer];
-        if (needCache && [target isKindOfClass:[NSObject class]]) {
-            [self.cacheTarget setValue:target forKey:targetString];
+        if (needCache && [target isKindOfClass:[NSObject class]] && target && targetString) {
+            [self.cacheTarget setObject:target forKey:targetString];
         }
         return target;
     }

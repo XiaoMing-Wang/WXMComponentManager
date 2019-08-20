@@ -7,6 +7,10 @@
 //
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
 #define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
+
+#define WXMDEBUG DEBUG
+#define WXMPreventCrashBegin  @try {
+#define WXMPreventCrashEnd    } @catch (NSException *exception) {} @finally {}
 #ifndef WXMComponentConfiguration_h
 #define WXMComponentConfiguration_h
 NS_ASSUME_NONNULL_BEGIN
@@ -15,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class WXMSignal;
 
 /** 存在data区字段 */
-#define WXMDEBUG DEBUG
 #define WXMKitSerName "WXMModuleClass"
 #define WXMKitDATA(sectName) __attribute((used,section("__DATA,"#sectName" ")))
 

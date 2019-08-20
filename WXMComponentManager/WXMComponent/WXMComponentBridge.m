@@ -8,11 +8,10 @@
 #import <objc/runtime.h>
 #import "WXMComponentData.h"
 #import "WXMComponentBridge.h"
-#import "WXMComponentBridgeContext.h"
+#import "WXMComponentContext.h"
 
 static char parameterKey;
 static char callbackKey;
-
 static NSPointerArray *_allInstanceTarget;
 @implementation WXMComponentBridge
 
@@ -72,7 +71,6 @@ static NSPointerArray *_allInstanceTarget;
 /** 发送 */
 + (WXMSignalContext * (^)(WXM_SIGNAL signal, id _Nullable parameter))sendSignal {
     return ^WXMSignalContext *(WXM_SIGNAL signal, id _Nullable parameter) {
-        
         WXMSignalContext *context = [[WXMSignalContext alloc] init];
         context.signal = signal;
         context.parameter = parameter;
@@ -136,7 +134,7 @@ static NSPointerArray *_allInstanceTarget;
 + (WXMSignal *)achieve:(WXMSignalContext *)context {
     WXMSignal * signal = [WXMSignal new];
     signal.signal = context.signal;
-    signal.parameter = context.parameter;
+    signal.object = context.parameter;
     [context addSignal:signal];
     return signal;
 }
@@ -161,6 +159,5 @@ static NSPointerArray *_allInstanceTarget;
     }
     _allInstanceTarget = weekArray;
 }
-
 
 @end

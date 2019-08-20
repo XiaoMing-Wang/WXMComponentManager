@@ -29,20 +29,21 @@ NS_ASSUME_NONNULL_BEGIN
 /** 判断url是否可以打开 */
 - (BOOL)canOpenUrl:(NSString *)url;
 
-/** 打开url 例 push直接跳转 */
-- (void)openUrl:(NSString *)url;
-- (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
-
-/** 返回结果(模块实现类实现协议) */
-- (id)resultsOpenUrl:(NSString *)url;
-- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
-- (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
-
-/** controller作为实现协议对象 */
+/** controller作为实现协议对象(1段路径) */
 - (UIViewController *)viewControllerWithUrl:(NSString *)url;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
 - (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(SignalCallBack)callBack;
+- (void)openViewController:(NSString *)url;
+- (void)openViewController:(NSString *)url params:(NSDictionary *_Nullable)params;
+- (void)openViewController:(NSString *)url callBack:(SignalCallBack)callBack;
+
+/** 模块实现类实现协议(2段路径) */
+- (id)resultsOpenUrl:(NSString *)url;
+- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
+- (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
+- (void)openUrl:(NSString *)url;
+- (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
+- (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
 @end
 
 NS_ASSUME_NONNULL_END

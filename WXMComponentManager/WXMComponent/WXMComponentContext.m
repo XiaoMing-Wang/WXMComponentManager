@@ -9,17 +9,15 @@
 #import <objc/runtime.h>
 #import "WXMComponentData.h"
 #import "WXMComponentBridge.h"
-#import "WXMComponentBridgeContext.h"
+#import "WXMComponentContext.h"
+@interface WXMSignalContext ()
+@property (nonatomic, strong) NSMutableArray *signArray;
+@end
 @interface WXMSignalDisposable ()
 @property (nonatomic, weak) id removeTarget;
 @property (nonatomic, copy) WXM_SIGNAL remoSignal;
 @property (nonatomic, copy) void (^callback)(void);
 @end
-
-@interface WXMSignalContext ()
-@property (nonatomic, strong) NSMutableArray *signArray;
-@end
-
 @implementation WXMObserveContext
 
 #pragma mark 监听
@@ -33,19 +31,13 @@
         WXMListenObject *listenObject = [WXMListenObject new];
         listenObject.signal = self.signal;
         listenObject.callback = [callback copy];
+        [self addSignal:listenObject];
         
-        NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
-        NSMutableArray *arrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
-        [arrayMutable addObject:listenObject];
-        objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, arrayMutable, 1);
-        [WXMComponentBridge addSignalReceive:self.target];
-        
-        /** disposable需要强持有self */
+        /** disposable需要强持有context */
         WXMSignalDisposable *disposable = [WXMSignalDisposable disposable:^{
-            NSArray *weekListens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
+            NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
             NSMutableArray *weekArrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
-            for (int i = 0; i < weekListens.count; i++) {
-                WXMListenObject *listenObject = [weekListens objectAtIndex:i];
+            for (WXMListenObject *listenObject in listens.reverseObjectEnumerator) {
                 if ([listenObject.signal isEqualToString:self.signal]) {
                     [weekArrayMutable removeObject:listenObject];
                 }
@@ -56,6 +48,14 @@
         
         return disposable;
     }
+}
+
+- (void)addSignal:(WXMListenObject *)listenObject {
+    NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
+    NSMutableArray *arrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
+    [arrayMutable addObject:listenObject];
+    objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, arrayMutable, 1);
+    [WXMComponentBridge addSignalReceive:self.target];
 }
 
 /** 删除当前对象同名信号 */
@@ -79,17 +79,17 @@
 
 - (void)addSignal:(WXMSignal *)signal {
     [self.signArray addObject:signal];
-    [self bindCallback];
+    [self bindCallbackWithAllSignal];
 }
 
 - (void)subscribeNext:(SignalCallBack)callback {
     self.callback = callback;
-    [self bindCallback];
+    [self bindCallbackWithAllSignal];
 }
 
-- (void)bindCallback {
+- (void)bindCallbackWithAllSignal {
     if (!self.callback) return;
-    for (WXMSignal* signal in self.signArray) {
+    for (WXMSignal *signal in self.signArray) {
         [signal setValue:self.callback forKey:WXM_SIGNAL_CALLBACK];
     }
 }
@@ -100,6 +100,7 @@
 }
 
 @end
+
 
 #pragma mark WXMSignalDisposable
 
@@ -115,4 +116,5 @@
         if (self.callback) self.callback();
     }
 }
+
 @end

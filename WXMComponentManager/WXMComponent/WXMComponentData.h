@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 /** 模块发送信号对象 */
 @interface WXMSignal : NSObject
 @property (nonatomic, copy) WXM_SIGNAL signal;
-@property (nonatomic, copy) NSDictionary *parameter;
 @property (nonatomic, strong) id object;
 - (void)sendNext:(id)parameter;
 @end

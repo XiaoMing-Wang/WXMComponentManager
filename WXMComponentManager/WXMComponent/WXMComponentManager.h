@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 /** 获取service对象 */
 - (id)serviceProvideForProtocol:(Protocol *)protocol;
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
+
+/** 删除service对象 */
 - (void)removeServiceCacheForProtocol:(Protocol *)protocol;
 
 @end

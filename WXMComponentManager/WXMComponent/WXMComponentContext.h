@@ -1,5 +1,5 @@
 //
-//  WXMComponentBridgeContext.h
+//  WXMComponentContext.h
 //  ModuleDebugging
 //
 //  Created by edz on 2019/7/19.
