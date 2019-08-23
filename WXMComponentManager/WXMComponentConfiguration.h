@@ -10,7 +10,7 @@
 
 #define WXMDEBUG DEBUG
 #define WXMPreventCrashBegin  @try {
-#define WXMPreventCrashEnd    } @catch (NSException *exception) {} @finally {}
+#define WXMPreventCrashEnd     } @catch (NSException *exception) {} @finally {}
 #ifndef WXMComponentConfiguration_h
 #define WXMComponentConfiguration_h
 NS_ASSUME_NONNULL_BEGIN
@@ -20,18 +20,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** 存在data区字段 */
 #define WXMKitSerName "WXMModuleClass"
-#define WXMKitDATA(sectName) __attribute((used,section("__DATA,"#sectName" ")))
+#define WXMKitDATA(sectName) __attribute((used,section("__DATA, "#sectName" ")))
 
 /** 使用该宏注册协议 */
-#define WXMService(procotol,impl) \
+#define WXMKitService(serviceInstance, procotol) \
 class WXMComponentRouter;\
 char * k##procotol##_ser \
-WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#impl"\"}";
+WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 
 /** 信号枚举类型 */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
-typedef void (^SignalCallBack)(id params);
-typedef void (^ObserveCallBack)(WXMSignal *signal);
+typedef void (^SignalCallBack) (id params);
+typedef void (^ObserveCallBack) (WXMSignal *signal);
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0, /** viewcontroller */
     WXMRouterType_push,          /** push */

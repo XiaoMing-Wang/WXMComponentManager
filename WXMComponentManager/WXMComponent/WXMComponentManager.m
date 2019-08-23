@@ -48,7 +48,7 @@
     if (!self.registeredDic) self.registeredDic = @{}.mutableCopy;
     if (!self.cacheTarget) self.cacheTarget = @{}.mutableCopy;
     if (service && protocol) [self.registeredDic setObject:service forKey:protocol];
-    NSLog(@"%@ ----- %@",service,protocol);
+    NSLog(@"%@ ----- %@",service, protocol);
 }
 
 /* 获取service对象(服务调用者) */
