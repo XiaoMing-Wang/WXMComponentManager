@@ -10,7 +10,6 @@
 #import "WXMComponentConfiguration.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
 @interface WXMResponse : NSObject
 @property (nonatomic, assign) BOOL success;
 @property (nonatomic, assign) NSInteger errorCode;
@@ -26,15 +25,15 @@ static inline WXMResponse *__WXMResponse(int errorCode, NullB errorMsg, NullB ob
     return response;
 }
 
-@interface WXMComponentService : NSObject <WXMComponentFeedBack>
+@interface WXMComponentService : NSObject <WXMServiceFeedBack>
 
-/** 设置callback */
-- (void)setServiceCallback:(ServiceCallBack)callback;
-
-/** 释放当前Service */
-- (void)closeCurrentService;
-
-/** 回调 */
-- (void)sendNext:(WXMResponse *)response;
+///** 设置callback */
+//- (void)setServiceCallback:(ServiceCallBack)callback;
+//
+///** 释放当前Service */
+//- (void)closeCurrentService;
+//
+///** 回调 */
+//- (void)sendNext:(WXMResponse *)response;
 @end
 NS_ASSUME_NONNULL_END

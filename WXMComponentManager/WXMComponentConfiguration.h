@@ -60,5 +60,17 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 
 @end
 
+@protocol WXMServiceFeedBack <NSObject>
+
+/** 设置callback */
+- (void)setServiceCallback:(ServiceCallBack)callback;
+
+/** 释放当前Service */
+- (void)closeCurrentService;
+
+/** 回调 */
+- (void)sendNext:(WXMResponse *)response;
+
+@end
 NS_ASSUME_NONNULL_END
 #endif /* WXMComponentConfiguration_h */

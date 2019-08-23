@@ -14,12 +14,9 @@
 #define WXMBridgeCallBack(target, parameter) \
 WXMComponentBridge.callBackForward(target, parameter)
 
-#define WXMCreateServiceWithProtocol(protocols) \
-\
-Protocol *protocolSEL = @protocol(protocols); \
-\
-id <protocols>service = [WXMMangerInstance serviceProvideForProtocol:protocolSEL];
-
+#define WCService(protocols) \
+[WXMMangerInstance serviceProvideForProtocol:@protocol(protocols)]
+/** id <WXMPhotoComponentProtocol>service = WCService(WXMPhotoComponentProtocol) */
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"

@@ -52,22 +52,17 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
 
 /** 注册组件 */
 + (void)load {
-    
-    dispatch_queue_t mainQueue = dispatch_get_main_queue();
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1 * NSEC_PER_SEC)), mainQueue, ^{
-        NSArray * array = WQReadConfiguration(WXMKitSerName);
-        [array enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary * dictionary = [self jsonToDictionary:obj];
-            if (![dictionary isKindOfClass:NSDictionary.class]) return;
-            
-            NSString *protocol = dictionary.allKeys.firstObject;
-            NSString *service = dictionary.allValues.firstObject;
-            
-            /** 注册组件 */
-            [[WXMComponentManager sharedInstance] addService:service protocol:protocol];
-        }];
-    });
-    
+    NSArray * array = WQReadConfiguration(WXMKitSerName);
+    [array enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
+        NSDictionary * dictionary = [self jsonToDictionary:obj];
+        if (![dictionary isKindOfClass:NSDictionary.class]) return;
+        
+        NSString *protocol = dictionary.allKeys.firstObject;
+        NSString *service = dictionary.allValues.firstObject;
+        
+        /** 注册组件 */
+        [[WXMComponentManager sharedInstance] addService:service protocol:protocol];
+    }];
 }
 
 /** json字符串转字典 */
