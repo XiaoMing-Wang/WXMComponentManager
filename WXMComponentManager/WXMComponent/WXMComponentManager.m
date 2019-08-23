@@ -19,13 +19,10 @@
 @interface WXMComponentManager ()
 
 /** 协议和实例 */
-@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *registeredDic;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *registeredDic;
 
 /** 缓存实例对象 引用计数+1 */
 @property (nonatomic, strong) NSMutableDictionary<NSString *, id> *cacheTarget;
-
-/** 保存所有初始化的对象(用于发送信息) */
-@property (nonatomic, strong) NSPointerArray *allInstanceTarget;
 @end
 
 @implementation WXMComponentManager
@@ -38,7 +35,6 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         mediator = [[self alloc] init];
-        mediator.allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
     });
     return mediator;
 }
@@ -48,7 +44,7 @@
     if (!self.registeredDic) self.registeredDic = @{}.mutableCopy;
     if (!self.cacheTarget) self.cacheTarget = @{}.mutableCopy;
     if (service && protocol) [self.registeredDic setObject:service forKey:protocol];
-    NSLog(@"%@ ----- %@",service, protocol);
+    NSLog(@"%@ ----- %@", service, protocol);
 }
 
 /* 获取service对象(服务调用者) */
@@ -60,10 +56,7 @@
     
     target = [NSClassFromString(targetString) new];
     if ([target conformsToProtocol:protocol] && target) {
-        
-        /** 目前存在的实例对象 发送消息使用 弱引用 */
-        [self.allInstanceTarget addPointer:(__bridge void *_Nullable)(target)];
-        
+      
         /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
         BOOL needCache = NO;
         SEL cacheImp = @selector(wc_cacheImplementer);
@@ -75,19 +68,19 @@
     }
     
     [self showAlertController:protosString];
-    return nil;
+    return target ?: nil;
 }
 
 /** 缓存target */
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol {
     id target = [self serviceCacheProvideForProtocol:protocol];
-    if (target != nil) {
+    if (target) {
         NSString *protosString = NSStringFromProtocol(protocol);
         NSString *targetString = [self.registeredDic objectForKey:protosString];
         [self.cacheTarget setValue:target forKey:targetString];
         return target;
     }
-    return nil;
+    return target ?: nil;
 }
 
 /** 删除缓存的target */
@@ -95,6 +88,17 @@
     NSString *protosString = NSStringFromProtocol(protocol);
     NSString *targetString = [self.registeredDic objectForKey:protosString];
     [self.cacheTarget removeObjectForKey:targetString];
+}
+
+- (void)removeServiceCache:(id)service {
+    __block NSString *protocol = nil;
+    [self.cacheTarget enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+        if (obj == service) {
+            protocol = key.copy;
+            *stop = YES;
+        }
+    }];
+    if (protocol) [self.cacheTarget removeObjectForKey:protocol];
 }
 
 /** 显示弹窗 */

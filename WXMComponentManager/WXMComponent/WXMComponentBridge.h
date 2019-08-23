@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 /** 监听*/
 + (WXMObserveContext * (^)(id target, WXM_SIGNAL signal))observe;
 
-
 #pragma mark 内部调用
 + (void)addSignalReceive:(id)target;
 + (void)handleParametersWithTarget:(id)target parameters:(id)parameter;

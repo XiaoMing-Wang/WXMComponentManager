@@ -18,13 +18,15 @@ NS_ASSUME_NONNULL_BEGIN
 /* 注册service 和 protocol */
 - (void)addService:(NSString *)target protocol:(NSString *)protocol;
 
-/** 获取service对象 */
+/** 获取service对象(多个service)*/
 - (id)serviceProvideForProtocol:(Protocol *)protocol;
+
+/** 获取service对象(缓存独一份) */
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
 
 /** 删除service对象 */
 - (void)removeServiceCacheForProtocol:(Protocol *)protocol;
-
+- (void)removeServiceCache:(id)service;
 @end
 
 NS_ASSUME_NONNULL_END
