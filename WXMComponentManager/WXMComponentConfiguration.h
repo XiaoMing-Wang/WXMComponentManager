@@ -7,13 +7,13 @@
 //
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
 #define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
+#define WXM_REMOVE_CALLBACK @"__WXM_REMOVE_CALLBACK"
 
 #define WXMDEBUG DEBUG
 #define WXMPreventCrashBegin  @try {
 #define WXMPreventCrashEnd     } @catch (NSException *exception) {} @finally {}
 #ifndef WXMComponentConfiguration_h
 #define WXMComponentConfiguration_h
-NS_ASSUME_NONNULL_BEGIN
 
 @class WXMParameterObject;
 @class WXMSignal;
@@ -53,24 +53,27 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 - (nullable NSArray <WXM_SIGNAL>*)wc_signals;
 
 /** 接收初始化接收的参数 */
-- (void)wc_receiveParameters:(WXMParameterObject *)obj;
+- (void)wc_receiveParameters:(WXMParameterObject *_Nullable)obj;
 
 /** 接收其他模块发出的消息 */
-- (void)wc_receivesSignalObject:(WXMSignal *)obj;
+- (void)wc_receivesSignalObject:(WXMSignal * _Nullable)obj;
 
 @end
 
 @protocol WXMServiceFeedBack <NSObject>
 
-/** 设置callback */
-- (void)setServiceCallback:(ServiceCallBack)callback;
+/** 设置主键 */
+- (void)setServicePrivateKey:(NSString * _Nonnull)privateKey;
 
-/** 释放当前Service */
-- (void)closeCurrentService;
+/** 设置callback */
+- (void)setServiceCallback:(ServiceCallBack _Nonnull)callback;
 
 /** 回调 */
-- (void)sendNext:(WXMResponse *)response;
+- (void)sendNext:(WXMResponse * _Nullable)response;
+
+/** 释放当前Service(单例模式的释放) */
+- (void)closeCurrentService;
 
 @end
-NS_ASSUME_NONNULL_END
+
 #endif /* WXMComponentConfiguration_h */

@@ -13,7 +13,10 @@
 
 static WXM_SIGNAL const WXM_MESSAGE_PHOTO_HEAD = @"WXM_MESSAGE_PHOTO_HEAD";
 static WXM_SIGNAL const WXM_MESSAGE_PHOTO = @"WXM_MESSAGE_PHOTO";
-
 @protocol WXMPhotoComponentProtocol <WXMServiceFeedBack>
 
+@end
+
+@protocol WXMTestServiceProtocol <WXMServiceFeedBack>
+- (void)haha;
 @end

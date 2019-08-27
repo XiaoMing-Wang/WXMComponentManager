@@ -15,8 +15,16 @@
 WXMComponentBridge.callBackForward(target, parameter)
 
 #define WCService(protocols) \
-[WXMMangerInstance serviceProvideForProtocol:@protocol(protocols)]
-/** id <WXMPhotoComponentProtocol>service = WCService(WXMPhotoComponentProtocol) */
+[WXMComponentServiceHelp serviceProvide:@protocol(protocols) depend:self]
+
+#define WCRemoveServiceKey(key) \
+[WXMComponentServiceHelp removePrivateKey:key depend:self];
+
+#define WCServiceForKey(privateKey) \
+[WXMComponentServiceHelp serviceforPrivateKey:privateKey depend:self];
+
+#define WCResponse(code, message, object) \
+[WXMResponse response:code errorMsg:message object:object];
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"
@@ -26,7 +34,6 @@ WXMComponentBridge.callBackForward(target, parameter)
 #import "WXMComponentData.h"
 #import "WXMComponentAnnotation.h"
 #import "WXMComponentConfiguration.h"
-
 #import "WXMAllComponentProtocol.h"
-
+#import "WXMComponentServiceHelp.h"
 

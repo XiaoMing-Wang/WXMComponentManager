@@ -21,8 +21,9 @@
 /** 协议和实例 */
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *registeredDic;
 
-/** 缓存实例对象 引用计数+1 */
+/** 缓存实例对象 引用计数 + 1 */
 @property (nonatomic, strong) NSMutableDictionary<NSString *, id> *cacheTarget;
+
 @end
 
 @implementation WXMComponentManager
@@ -51,12 +52,10 @@
 - (id)serviceProvideForProtocol:(Protocol *)protocol {
     NSString *protosString = NSStringFromProtocol(protocol);
     NSString *targetString = [self.registeredDic objectForKey:protosString];
-    id<WXMComponentFeedBack> target = [self.cacheTarget objectForKey:targetString];
-    if (target) return target;
+    id<WXMComponentFeedBack> target = [NSClassFromString(targetString) new];
     
-    target = [NSClassFromString(targetString) new];
     if ([target conformsToProtocol:protocol] && target) {
-      
+        
         /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
         BOOL needCache = NO;
         SEL cacheImp = @selector(wc_cacheImplementer);
@@ -64,22 +63,22 @@
         if (needCache && [target isKindOfClass:[NSObject class]] && target && targetString) {
             [self.cacheTarget setObject:target forKey:targetString];
         }
-        return target;
     }
     
+    if (target) return target;
     [self showAlertController:protosString];
-    return target ?: nil;
+    return nil;
 }
 
 /** 缓存target */
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol {
-    id target = [self serviceCacheProvideForProtocol:protocol];
-    if (target) {
-        NSString *protosString = NSStringFromProtocol(protocol);
-        NSString *targetString = [self.registeredDic objectForKey:protosString];
-        [self.cacheTarget setValue:target forKey:targetString];
-        return target;
-    }
+    NSString *protosString = NSStringFromProtocol(protocol);
+    NSString *targetString = [self.registeredDic objectForKey:protosString];
+    id<WXMComponentFeedBack> target = [self.cacheTarget objectForKey:targetString];
+    if (target) return target;
+    
+    target = [self serviceProvideForProtocol:protocol];
+    if (target) [self.cacheTarget setObject:target forKey:targetString];
     return target ?: nil;
 }
 
@@ -90,15 +89,16 @@
     [self.cacheTarget removeObjectForKey:targetString];
 }
 
+/** 删掉Service */
 - (void)removeServiceCache:(id)service {
-    __block NSString *protocol = nil;
+    __block NSString *targetString = nil;
     [self.cacheTarget enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
         if (obj == service) {
-            protocol = key.copy;
+            targetString = key.copy;
             *stop = YES;
         }
     }];
-    if (protocol) [self.cacheTarget removeObjectForKey:protocol];
+    if (targetString) [self.cacheTarget removeObjectForKey:targetString];
 }
 
 /** 显示弹窗 */
