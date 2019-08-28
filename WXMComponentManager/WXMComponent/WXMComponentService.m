@@ -7,42 +7,70 @@
 //
 #import "WXMComponentManager.h"
 #import "WXMComponentService.h"
-#import "WXMComponentServiceHelp.h"
+#import "WXMComponentServiceManager.h"
 
 @interface WXMComponentService ()
-@property (nonatomic, copy) ServiceCallBack callback;
-@property (nonatomic, copy, readwrite) NSString *privateKey;
-@property (nonatomic, strong) void (^removeBlock)(void);
+@property (nonatomic, strong) NSMutableArray<ServiceCallBack> *callbackArray;
+@property (nonatomic, strong) ServiceCallBack callback;
+@property (nonatomic, strong) LoneCallBack loneCallback;
 @end
-@implementation WXMComponentService
+#pragma mark ____________________________________ WXMComponentError
 
-- (void)setServicePrivateKey:(NSString * _Nonnull)privateKey {
-    self.privateKey = [privateKey copy];
+@implementation WXMComponentError
++ (instancetype)error:(NSInteger)code message:(NSString *)message object:(id)object {
+    WXMComponentError *error = [[WXMComponentError alloc] init];
+    error.code = code;
+    error.message = message;
+    error.object = object;
+    error.success = (code == 0);
+    return error;
 }
+@end
+
+#pragma mark ____________________________________ WXMComponentService
+
+@implementation WXMComponentService
 
 - (void)setServiceCallback:(ServiceCallBack)callback {
     self.callback = [callback copy];
+    if (self.isSingleton) [self.callbackArray addObject:callback];
 }
 
-- (void)sendNext:(WXMResponse *)response {
-    if (self.callback) self.callback(response);
-}
-
-- (void)closeCurrentService {
-    if (self.privateKey) {
-        if (self.removeBlock) self.removeBlock();
-    } else [[WXMComponentManager sharedInstance] removeServiceCache:self];
+- (void)sendNext:(id _Nullable)response {
+    if (self.isSingleton) {
+        for (ServiceCallBack call in self.callbackArray) { if (call) call(response); }
+    } else {
+        if (self.callback) self.callback(response);
+        if (self.loneCallback) self.loneCallback();
+    }
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key {
     if ([key isEqualToString:WXM_REMOVE_CALLBACK] && value) {
-        self.removeBlock = (void (^)(void)) value;
+        self.loneCallback = (LoneCallBack) value;
     }
 }
 
-- (void)dealloc {
-#if DEBUG
-    NSLog(@"%@ 释放", NSStringFromClass(self.class));
-#endif
+/** 释放 */
+- (void)closeCurrentService {
+    [[WXMComponentManager sharedInstance] removeServiceCache:self];
 }
+
+/** 是否是单例 */
+- (BOOL)isSingleton {
+    return [[WXMComponentManager sharedInstance] exsitCacheServiceCache:self];
+}
+
+- (NSMutableArray<ServiceCallBack> *)callbackArray {
+    if (!_callbackArray) _callbackArray = @[].mutableCopy;
+    return _callbackArray;
+}
+
+- (void)dealloc {
+    if (WXMDEBUG) NSLog(@"%@ 释放", NSStringFromClass(self.class));
+}
+
 @end
+
+
+

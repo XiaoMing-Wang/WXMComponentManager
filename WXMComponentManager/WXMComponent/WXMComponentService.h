@@ -10,8 +10,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface WXMComponentError : NSObject
+@property (nonatomic, assign) BOOL success;
+@property (nonatomic, assign) NSInteger code;
+@property (nonatomic, strong) NSString *message;
+@property (nonatomic, strong) id object;
+
++ (instancetype)error:(NSInteger)code message:(NSString *)message object:(id)object;
+
+@end
+
 @interface WXMComponentService : NSObject <WXMServiceFeedBack>
-@property (nonatomic, copy, readonly) NSString *privateKey;
+
 @end
 
 NS_ASSUME_NONNULL_END

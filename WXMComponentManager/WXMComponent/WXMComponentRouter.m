@@ -15,8 +15,7 @@
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     WXMRouterTypeWhether = 0,
-    WXMRouterTypeParameter = 1,
-    WXMRouterTypeJump = 2,
+    WXMRouterTypeObject,
 };
 
 @implementation WXMComponentRouter
@@ -32,66 +31,63 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 
 /** 是否可以打开 */
 - (BOOL)canOpenUrl:(NSString * _Nonnull)url {
-    id results = [self openUrl:url passObj:nil routerType:WXMRouterTypeWhether];
+    id results = [self objUrl:url passObj:nil routerType:WXMRouterTypeWhether];
     if ([results boolValue] && results != nil) return YES;
     return NO;
 }
 
 /** 返回结果(模块实现类实现协议方法) */
 - (id)resultsOpenUrl:(NSString *)url {
-    return [self openUrl:url passObj:nil routerType:WXMRouterTypeParameter];
+    return [self objectWithUrl:url obj:nil];
 }
 - (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
-    return [self openUrl:url passObj:params routerType:WXMRouterTypeParameter];
+    return [self objectWithUrl:url obj:params];
 }
 - (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
-    return [self openUrl:url passObj:callBack routerType:WXMRouterTypeParameter];
+    return [self objectWithUrl:url obj:callBack];
 }
 
 /** 直接打开url */
 - (void)openUrl:(NSString *)url {
-    [self openUrl:url passObj:nil routerType:WXMRouterTypeJump];
+    [self openViewController:url obj:nil];
 }
 - (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
-    [self openUrl:url passObj:params routerType:WXMRouterTypeJump];
+    [self openViewController:url obj:params];
 }
 - (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack {
-    [self openUrl:url passObj:callBack routerType:WXMRouterTypeJump];
+    [self openViewController:url obj:callBack];
 }
 
-/** controller作为实现协议对象 */
-- (UIViewController *)viewControllerWithUrl:(NSString *)url {
-    return [self viewControllerWithUrl:url obj:nil];
-}
-- (UIViewController *)viewControllerWithUrl:(NSString *)url params:(NSDictionary *_Nullable)params {
-    return [self viewControllerWithUrl:url obj:params];
-}
-- (UIViewController *)viewControllerWithUrl:(NSString *)url callBack:(SignalCallBack)callBack {
-    return [self viewControllerWithUrl:url obj:callBack];
+/** 获取object 1 */
+- (id)objectWithUrl:(NSString *)url obj:(id _Nullable)obj {
+    NSString *scheme = [NSURL URLWithString:url].scheme;
+    if (!scheme) return nil;
+    
+    id callbackObj = nil;
+    BOOL isComponent = [self isComponent:url];
+    
+    if (isComponent) callbackObj = [self viewControllerWithUrl:url obj:obj];
+    else callbackObj = [self objUrl:url passObj:obj routerType:WXMRouterTypeObject];
+
+    return callbackObj;
 }
 
-/** controller作为实现协议对象 */
-- (void)openViewController:(NSString *)url {
+/** 打开viewcontroller */
+- (void)openViewController:(NSString *)url obj:(id _Nullable)obj {
     NSString *scheme = [NSURL URLWithString:url].scheme;
     if (!scheme) return;
-    UIViewController *controller = [self viewControllerWithUrl:url];
-    [self jumpViewController:controller scheme:scheme];
-}
-- (void)openViewController:(NSString *)url params:(NSDictionary *_Nullable)params {
-    NSString *scheme = [NSURL URLWithString:url].scheme;
-    if (!scheme) return;
-    UIViewController *controller = [self viewControllerWithUrl:url params:params];
-    [self jumpViewController:controller scheme:scheme];
-}
-- (void)openViewController:(NSString *)url callBack:(SignalCallBack)callBack {
-    NSString *scheme = [NSURL URLWithString:url].scheme;
-    if (!scheme) return;
-    UIViewController *controller = [self viewControllerWithUrl:url callBack:callBack];
+    
+    BOOL isComponent = [self isComponent:url];
+    UIViewController *controller = nil;
+    
+    if (isComponent) controller = [self viewControllerWithUrl:url obj:obj];
+    else controller = [self objUrl:url passObj:obj routerType:WXMRouterTypeObject];
+    
     [self jumpViewController:controller scheme:scheme];
 }
 
 /** 根判断1 */
-- (id)openUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
+- (id)objUrl:(NSString *)url passObj:(id)passObj routerType:(WXMComponentRouterType)routerType {
     @try {
         
         NSURL *urlUrl = [NSURL URLWithString:url];
@@ -131,7 +127,9 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         if (!service || !selReal || ![service respondsToSelector:selReal]) {
             if (!service && WXMDEBUG) NSLog(@"无法生成service类");
             if (!selReal && WXMDEBUG) NSLog(@"无法生成action函数");
-            if (![service respondsToSelector:selReal] && WXMDEBUG) NSLog(@"service无法无法响应这个函数");
+            if (![service respondsToSelector:selReal] && WXMDEBUG) {
+                NSLog(@"service无法无法响应这个函数");
+            }
             return nil;
         }
         
@@ -139,18 +137,13 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         id __target = nil;
         if (routerType == WXMRouterTypeWhether) {
             return @(YES);
-        } else if (routerType == WXMRouterTypeParameter)  {
+        } else if (routerType == WXMRouterTypeObject)  {
             __target = [service performSelector:selReal withObject:parameter];
             [self handleParametersWithTarget:__target parameters:parameter];
-        } else if (routerType == WXMRouterTypeJump) {
-            UIViewController <WXMComponentFeedBack>* vc = nil;
-            vc = [service performSelector:selReal withObject:parameter];
-            [self handleParametersWithTarget:vc parameters:parameter];
-            [self jumpViewController:vc scheme:scheme];
         }
         
-        return __target;
-    } @catch (NSException *exception) { if (WXMDEBUG) NSLog(@"openUrl判断崩溃 !!!!!!!"); } @finally {}
+        return __target ?: nil;
+    } @catch (NSException *exception) { if (WXMDEBUG) NSLog(@"openUrl判断崩溃 !!!"); } @finally {}
 }
 
 /** 根判断2(controller即service) */
@@ -197,11 +190,10 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (NSString *(^)(WXMRouterType type, NSString *protocol, ...))createRoute {
     return ^NSString *(WXMRouterType type, NSString *protocol, ...) {
         NSString *header = @"";
-        if (type == WXMRouterType_component) header = @"component";
+        if (type == WXMRouterType_component) header = WXM_COMPONENT;
         if (type == WXMRouterType_push) header = @"push";
         if (type == WXMRouterType_present) header = @"present";
         if (type == WXMRouterType_parameter) header = @"parameter";
-        if (type == WXMRouterType_signal) header = @"signal";
         if (header.length == 0) return nil;
         NSString *aString = [NSString stringWithFormat:@"%@://%@",header,protocol];
         
@@ -243,6 +235,11 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     return [relativePath stringByReplacingOccurrencesOfString:@"/" withString:@""];
 }
 
+/** 判断是不是 */
+- (BOOL)isComponent:(NSString *)url {
+    return [[NSURL URLWithString:url].scheme isEqualToString:WXM_COMPONENT];
+}
+
 /** 获取当前导航控制器 */
 - (UINavigationController *)currentNavigationController {
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
@@ -264,6 +261,11 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     };
     
     if (rootVC.presentedViewController) {
+        UIViewController *controller = rootVC.presentedViewController;
+        if ([controller isKindOfClass:[UIAlertController class]]) {
+            [controller dismissViewControllerAnimated:YES completion:nil];
+            return controllersCallback(rootVC);
+        }
         return controllersCallback(rootVC.presentedViewController);
     } else {
         return controllersCallback(rootVC);

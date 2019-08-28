@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 /** 释放 */
 @interface WXMSignalDisposable : NSObject
 + (instancetype)disposable:(void (^)(void))callback;
-- (void)disposable; /** 取消掉当前信号 */
+
+/** 取消掉当前信号 */
+- (void)disposable;
 @end
 NS_ASSUME_NONNULL_END

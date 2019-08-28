@@ -15,16 +15,10 @@
 WXMComponentBridge.callBackForward(target, parameter)
 
 #define WCService(protocols) \
-[WXMComponentServiceHelp serviceProvide:@protocol(protocols) depend:self]
+[[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols)]
 
-#define WCRemoveServiceKey(key) \
-[WXMComponentServiceHelp removePrivateKey:key depend:self];
-
-#define WCServiceForKey(privateKey) \
-[WXMComponentServiceHelp serviceforPrivateKey:privateKey depend:self];
-
-#define WCResponse(code, message, object) \
-[WXMResponse response:code errorMsg:message object:object];
+#define WCError(code, message, object) \
+[WXMComponentError error:code message:message object:object];
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"
@@ -35,5 +29,6 @@ WXMComponentBridge.callBackForward(target, parameter)
 #import "WXMComponentAnnotation.h"
 #import "WXMComponentConfiguration.h"
 #import "WXMAllComponentProtocol.h"
-#import "WXMComponentServiceHelp.h"
+#import "WXMComponentService.h"
+#import "WXMComponentServiceManager.h"
 

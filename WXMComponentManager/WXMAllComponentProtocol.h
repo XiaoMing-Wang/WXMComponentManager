@@ -17,6 +17,10 @@ static WXM_SIGNAL const WXM_MESSAGE_PHOTO = @"WXM_MESSAGE_PHOTO";
 
 @end
 
+@protocol KVOViewControllerProcotol <WXMServiceFeedBack>
+
+@end
+
 @protocol WXMTestServiceProtocol <WXMServiceFeedBack>
 - (void)haha;
 @end

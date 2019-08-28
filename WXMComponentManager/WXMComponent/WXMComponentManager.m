@@ -101,6 +101,14 @@
     if (targetString) [self.cacheTarget removeObjectForKey:targetString];
 }
 
+/** 是否存在缓存 */
+- (BOOL)exsitCacheServiceCache:(id)service {
+    for (id cacheObj in self.cacheTarget) {
+        if (cacheObj == service) return YES;
+    }
+    return NO;
+}
+
 /** 显示弹窗 */
 - (void)showAlertController:(NSString *)title {
     if(WXMDEBUG == NO) return;

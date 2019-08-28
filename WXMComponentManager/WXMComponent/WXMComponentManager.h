@@ -20,13 +20,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** 获取service对象(多个service)*/
 - (id)serviceProvideForProtocol:(Protocol *)protocol;
-
-/** 获取service对象(缓存独一份) */
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol;
 
 /** 删除service对象 */
 - (void)removeServiceCacheForProtocol:(Protocol *)protocol;
 - (void)removeServiceCache:(id)service;
+
+/** 是否存在缓存 */
+- (BOOL)exsitCacheServiceCache:(id)service;
 @end
 
 NS_ASSUME_NONNULL_END

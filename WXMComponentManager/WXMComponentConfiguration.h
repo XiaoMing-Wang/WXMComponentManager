@@ -5,6 +5,7 @@
 //  Created by edz on 2019/7/7.
 //  Copyright © 2019 wq. All rights reserved.
 //
+#define WXM_COMPONENT @"component"
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
 #define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
 #define WXM_REMOVE_CALLBACK @"__WXM_REMOVE_CALLBACK"
@@ -17,11 +18,11 @@
 
 @class WXMParameterObject;
 @class WXMSignal;
-@class WXMResponse;
+@class WXMComponentError;
 
 /** 存在data区字段 */
 #define WXMKitSerName "WXMModuleClass"
-#define WXMKitDATA(sectName) __attribute((used,section("__DATA, "#sectName" ")))
+#define WXMKitDATA(sectName) __attribute((used, section("__DATA, "#sectName" ")))
 
 /** 使用该宏注册协议 */
 #define WXMKitService(serviceInstance, procotol) \
@@ -31,15 +32,15 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 
 /** 信号枚举类型 */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
+typedef void (^LoneCallBack) (void);
 typedef void (^SignalCallBack) (id params);
 typedef void (^ObserveCallBack) (WXMSignal *signal);
-typedef void (^ServiceCallBack) (WXMResponse *response);
+typedef void (^ServiceCallBack) (WXMComponentError *response);
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0, /** viewcontroller */
     WXMRouterType_push,          /** push */
     WXMRouterType_present,       /** present */
     WXMRouterType_parameter,     /** 传参 */
-    WXMRouterType_signal,        /** 模块数据交互 */
 };
 
 /** 模块交互协议需要处理消息的遵循该协议  */
@@ -53,7 +54,7 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 - (nullable NSArray <WXM_SIGNAL>*)wc_signals;
 
 /** 接收初始化接收的参数 */
-- (void)wc_receiveParameters:(WXMParameterObject *_Nullable)obj;
+- (void)wc_receiveParameters:(WXMParameterObject * _Nullable)obj;
 
 /** 接收其他模块发出的消息 */
 - (void)wc_receivesSignalObject:(WXMSignal * _Nullable)obj;
@@ -62,14 +63,11 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 
 @protocol WXMServiceFeedBack <NSObject>
 
-/** 设置主键 */
-- (void)setServicePrivateKey:(NSString * _Nonnull)privateKey;
-
 /** 设置callback */
 - (void)setServiceCallback:(ServiceCallBack _Nonnull)callback;
 
 /** 回调 */
-- (void)sendNext:(WXMResponse * _Nullable)response;
+- (void)sendNext:(WXMComponentError * _Nullable)response;
 
 /** 释放当前Service(单例模式的释放) */
 - (void)closeCurrentService;
