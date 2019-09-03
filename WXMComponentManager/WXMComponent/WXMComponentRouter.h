@@ -27,14 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** 模块实现类实现协议 */
 - (id)resultsOpenUrl:(NSString *)url;
-- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
+- (id)resultsOpenUrl:(NSString *)url params:(NSDictionary * _Nullable)params;
 - (id)resultsOpenUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
 
 /** 打开 */
 - (void)openUrl:(NSString *)url;
-- (void)openUrl:(NSString *)url params:(NSDictionary *_Nullable)params;
+- (void)openUrl:(NSString *)url params:(NSDictionary * _Nullable)params;
 - (void)openUrl:(NSString *)url callBack:(SignalCallBack _Nullable)callBack;
-
 @end
 
 NS_ASSUME_NONNULL_END

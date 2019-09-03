@@ -5,14 +5,14 @@
 //  Created by wq on 2019/4/19.
 //  Copyright © 2019年 wq. All rights reserved.
 //
-#import <objc/runtime.h>
-#include <mach-o/getsect.h>
-#include <mach-o/loader.h>
-#include <mach-o/dyld.h>
 #include <dlfcn.h>
+#include <mach-o/dyld.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
+#import <objc/runtime.h>
+#include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
 #import "WXMComponentHeader.h"
 #import "WXMComponentManager.h"
 
@@ -114,7 +114,7 @@
     if(WXMDEBUG == NO) return;
     UIAlertController *aler = nil;
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
-    NSString * msg = [NSString stringWithFormat:@"协议:%@ 没有注册",title];
+    NSString * msg = [NSString stringWithFormat:@"协议:%@ 没有注册或类无法实例化",title];
   
     aler = [UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:1];
     UIAlertAction *can = [UIAlertAction actionWithTitle:@"取消" style:1 handler:nil];

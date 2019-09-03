@@ -60,30 +60,16 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 
 /** 获取object 1 */
 - (id)objectWithUrl:(NSString *)url obj:(id _Nullable)obj {
-    NSString *scheme = [NSURL URLWithString:url].scheme;
-    if (!scheme) return nil;
-    
-    id callbackObj = nil;
-    BOOL isComponent = [self isComponent:url];
-    
-    if (isComponent) callbackObj = [self viewControllerWithUrl:url obj:obj];
-    else callbackObj = [self objUrl:url passObj:obj routerType:WXMRouterTypeObject];
-
-    return callbackObj;
+    if (![NSURL URLWithString:url].scheme) return nil;
+    if ([self isComponent:url]) return  [self viewControllerWithUrl:url obj:obj];
+    return [self objUrl:url passObj:obj routerType:WXMRouterTypeObject];
 }
 
 /** 打开viewcontroller */
 - (void)openViewController:(NSString *)url obj:(id _Nullable)obj {
-    NSString *scheme = [NSURL URLWithString:url].scheme;
-    if (!scheme) return;
-    
-    BOOL isComponent = [self isComponent:url];
-    UIViewController *controller = nil;
-    
-    if (isComponent) controller = [self viewControllerWithUrl:url obj:obj];
-    else controller = [self objUrl:url passObj:obj routerType:WXMRouterTypeObject];
-    
-    [self jumpViewController:controller scheme:scheme];
+    id controller = [self objectWithUrl:url obj:obj];
+    if (![controller isKindOfClass:[UIViewController class]]) return;
+    [self jumpViewController:controller scheme:[NSURL URLWithString:url].scheme];
 }
 
 /** 根判断1 */

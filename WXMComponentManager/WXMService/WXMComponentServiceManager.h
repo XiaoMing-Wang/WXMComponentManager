@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 /** 创建service */
-- (id)serviceProvide:(Protocol *)protocol;
+- (id)serviceProvide:(Protocol *)protocol depend:(id)depend;
 
 /** 创建单例service */
 - (id)serviceCacheProvide:(Protocol *)protocol;

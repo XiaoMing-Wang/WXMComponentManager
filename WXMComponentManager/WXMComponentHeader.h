@@ -4,6 +4,9 @@
 //
 //  Created by wq on 2019/4/20.
 //  Copyright © 2019年 wq. All rights reserved.
+#define weakifyself autoreleasepool {} __weak typeof(self) weakself = self;
+#define strongifyself autoreleasepool {} __strong __typeof(weakself) self = weakself;
+
 
 #define WXMRouterInstance [WXMComponentRouter sharedInstance]
 #define WXMMangerInstance [WXMComponentManager sharedInstance]
@@ -15,7 +18,7 @@
 WXMComponentBridge.callBackForward(target, parameter)
 
 #define WCService(protocols) \
-[[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols)]
+[[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols) depend:self]
 
 #define WCError(code, message, object) \
 [WXMComponentError error:code message:message object:object];
@@ -25,6 +28,7 @@ WXMComponentBridge.callBackForward(target, parameter)
 #import "WXMComponentManager.h"
 #import "WXMComponentContext.h"
 
+#import "WXMComponentError.h"
 #import "WXMComponentData.h"
 #import "WXMComponentAnnotation.h"
 #import "WXMComponentConfiguration.h"
