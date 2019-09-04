@@ -10,28 +10,65 @@
 #import "WXMComponentServiceManager.h"
 
 @interface WXMComponentService ()
+@property (nonatomic, strong) WXMComponentError *responseCache;
 @property (nonatomic, strong) NSMutableArray<ServiceCallBack> *callbackArray;
 @property (nonatomic, strong, readonly) ServiceCallBack callback;
 @property (nonatomic, strong, readonly) LoneCallBack loneCallback;
 @end
 @implementation WXMComponentService
 
-- (void)setServiceCallback:(ServiceCallBack)callback {
-    _callback = [callback copy];
-    if (self.isSingleton && callback) [self.callbackArray addObject:callback];
+- (WXMComponentError *_Nullable)cacheDataSource {
+    return nil;
 }
 
-- (void)sendNext:(id _Nullable)response {
-    if (self.isSingleton) {
-        for (ServiceCallBack call in self.callbackArray) {
-            if (call) call(response);
-        }
-    } else {
-        if (self.callback) self.callback(response);
-        if (self.loneCallback) self.loneCallback();
+- (void)setServiceCallback:(ServiceCallBack)callback {
+    if (self.isSingleton) {  /* 单例 */
+        if (callback) [self.callbackArray addObject:callback];
+        return;
+    }
+    
+    _callback = [callback copy];
+    if (callback == nil) return;
+    if (self.responseCache) {
+        
+        /** 先调用后setServiceCallback 回调后释放service */
+        callback(self.responseCache);
+        [self releaseServiceSelf];
+        
+    } else if (self.cacheDataSource) {
+        
+        /** 加载缓存不释放service */
+        callback(self.cacheDataSource);
+        
     }
 }
 
+- (void)sendNext:(id _Nullable)response {
+    if (self.isSingleton) {   /* 单例 */
+        [self serviceArrayCallBack:response]; return;
+    }
+    
+    if (self.callback) {
+        self.callback(response);
+        [self releaseServiceSelf];
+    } else {
+        self.responseCache = response;
+    }
+}
+
+/** 释放service */
+- (void)releaseServiceSelf {
+    if (self.loneCallback) self.loneCallback();
+}
+
+/** 数组 */
+- (void)serviceArrayCallBack:(id)response {
+    for (ServiceCallBack call in self.callbackArray) {
+        if (call) call(response);
+    }
+}
+
+/** 释放的block赋值 */
 - (void)setValue:(id)value forKey:(NSString *)key {
     if ([key isEqualToString:WXM_REMOVE_CALLBACK] && value) {
         _loneCallback = (LoneCallBack) value;

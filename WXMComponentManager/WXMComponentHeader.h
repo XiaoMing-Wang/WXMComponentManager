@@ -7,9 +7,9 @@
 #define weakifyself autoreleasepool {} __weak typeof(self) weakself = self;
 #define strongifyself autoreleasepool {} __strong __typeof(weakself) self = weakself;
 
-
 #define WXMRouterInstance [WXMComponentRouter sharedInstance]
 #define WXMMangerInstance [WXMComponentManager sharedInstance]
+#define WXMSeiviceInstance [WXMComponentServiceManager sharedInstance]
 #define WXMBridgeParameter(target) WXMComponentBridge.parameter(target)
 #define WXMBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
 #define WXMBridgeSendSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)

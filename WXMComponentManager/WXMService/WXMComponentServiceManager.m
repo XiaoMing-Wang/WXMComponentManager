@@ -30,7 +30,7 @@
     id service = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:protocol];
     if (![service respondsToSelector:@selector(setServiceCallback:)]) return nil;
     if (![service isKindOfClass:WXMComponentService.class]) return nil;
-    [self addRetainService:service dependKey:[self dependKey:depend]];
+    [self addService:service dependKey:[self dependKey:depend]];
     [self managerServicerDealloc:depend];
     return service;
 }
@@ -44,7 +44,7 @@
 }
 
 /** 强引用 */
-- (void)addRetainService:(WXMComponentService *)service dependKey:(NSString *)dependKey {
+- (void)addService:(WXMComponentService *)service dependKey:(NSString *)dependKey {
     if (!service || !dependKey) return;
     if ([self exitService:service dependKey:dependKey]) return;
     @synchronized (self) {

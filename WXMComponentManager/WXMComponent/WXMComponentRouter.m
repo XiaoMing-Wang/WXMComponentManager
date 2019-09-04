@@ -249,7 +249,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     if (rootVC.presentedViewController) {
         UIViewController *controller = rootVC.presentedViewController;
         if ([controller isKindOfClass:[UIAlertController class]]) {
-            [controller dismissViewControllerAnimated:YES completion:nil];
+            [controller dismissViewControllerAnimated:NO completion:nil];
             return controllersCallback(rootVC);
         }
         return controllersCallback(rootVC.presentedViewController);

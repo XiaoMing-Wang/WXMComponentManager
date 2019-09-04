@@ -33,9 +33,9 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 /** 信号枚举类型 */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
 typedef void (^LoneCallBack) (void);
-typedef void (^SignalCallBack) (id params);
-typedef void (^ObserveCallBack) (WXMSignal *signal);
-typedef void (^ServiceCallBack) (WXMComponentError *response);
+typedef void (^SignalCallBack) (id _Nullable params);
+typedef void (^ObserveCallBack) (WXMSignal * _Nullable signal);
+typedef void (^ServiceCallBack) (WXMComponentError *_Nullable response);
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0, /** viewcontroller */
     WXMRouterType_push,          /** push */
@@ -69,7 +69,10 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 /** 回调 */
 - (void)sendNext:(WXMComponentError * _Nullable)response;
 
-/** 释放当前Service(单例模式的释放) */
+/** 获取缓存数据源 */
+- (WXMComponentError *_Nullable )cacheDataSource;
+
+/** 释放单例Service */
 - (void)closeCurrentService;
 
 @end
