@@ -15,11 +15,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)sharedInstance;
 
-/** 创建service */
+/** 创建service(回调或者depend被释放时service销毁) */
 - (id)serviceProvide:(Protocol *)protocol depend:(id)depend;
 
 /** 创建单例service */
 - (id)serviceCacheProvide:(Protocol *)protocol;
+
+
+- (id)serviceCacheProvide:(Protocol *)protocol depend:(id)depend;
 
 @end
 

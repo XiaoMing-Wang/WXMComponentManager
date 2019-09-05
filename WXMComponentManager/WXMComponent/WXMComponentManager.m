@@ -103,10 +103,11 @@
 
 /** 是否存在缓存 */
 - (BOOL)exsitCacheServiceCache:(id)service {
-    for (id cacheObj in self.cacheTarget) {
-        if (cacheObj == service) return YES;
-    }
-    return NO;
+    __block BOOL exsit = NO;
+    [self.cacheTarget enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+        if (obj == service) exsit = YES;
+    }];
+    return exsit;
 }
 
 /** 显示弹窗 */

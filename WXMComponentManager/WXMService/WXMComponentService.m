@@ -11,21 +11,12 @@
 
 @interface WXMComponentService ()
 @property (nonatomic, strong) WXMComponentError *responseCache;
-@property (nonatomic, strong) NSMutableArray<ServiceCallBack> *callbackArray;
 @property (nonatomic, strong, readonly) ServiceCallBack callback;
 @property (nonatomic, strong, readonly) LoneCallBack loneCallback;
 @end
 @implementation WXMComponentService
 
-- (WXMComponentError *_Nullable)cacheDataSource {
-    return nil;
-}
-
 - (void)setServiceCallback:(ServiceCallBack)callback {
-    if (self.isSingleton) {  /* 单例 */
-        if (callback) [self.callbackArray addObject:callback];
-        return;
-    }
     
     _callback = [callback copy];
     if (callback == nil) return;
@@ -39,15 +30,10 @@
         
         /** 加载缓存不释放service */
         callback(self.cacheDataSource);
-        
     }
 }
 
 - (void)sendNext:(id _Nullable)response {
-    if (self.isSingleton) {   /* 单例 */
-        [self serviceArrayCallBack:response]; return;
-    }
-    
     if (self.callback) {
         self.callback(response);
         [self releaseServiceSelf];
@@ -58,14 +44,11 @@
 
 /** 释放service */
 - (void)releaseServiceSelf {
-    if (self.loneCallback) self.loneCallback();
-}
-
-/** 数组 */
-- (void)serviceArrayCallBack:(id)response {
-    for (ServiceCallBack call in self.callbackArray) {
-        if (call) call(response);
-    }
+    dispatch_queue_t queue = dispatch_get_main_queue();
+    int64_t delta = (int64_t)(.1f * NSEC_PER_SEC);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delta), queue, ^{
+        if (self.loneCallback) self.loneCallback();
+    });
 }
 
 /** 释放的block赋值 */
@@ -75,19 +58,9 @@
     }
 }
 
-/** 释放 */
-- (void)closeCurrentService {
-    [[WXMComponentManager sharedInstance] removeServiceCache:self];
-}
-
-/** 是否是单例 */
-- (BOOL)isSingleton {
-    return [[WXMComponentManager sharedInstance] exsitCacheServiceCache:self];
-}
-
-- (NSMutableArray<ServiceCallBack> *)callbackArray {
-    if (!_callbackArray) _callbackArray = @[].mutableCopy;
-    return _callbackArray;
+/** 返回缓存 */
+- (WXMComponentError *_Nullable)cacheDataSource {
+    return nil;
 }
 
 - (void)dealloc {

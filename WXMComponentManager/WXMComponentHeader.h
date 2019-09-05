@@ -20,6 +20,9 @@ WXMComponentBridge.callBackForward(target, parameter)
 #define WCService(protocols) \
 [[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols) depend:self]
 
+#define WCServiceUnique(protocols) \
+[[WXMComponentServiceManager sharedInstance] serviceCacheProvide:@protocol(protocols)]
+
 #define WCError(code, message, object) \
 [WXMComponentError error:code message:message object:object];
 

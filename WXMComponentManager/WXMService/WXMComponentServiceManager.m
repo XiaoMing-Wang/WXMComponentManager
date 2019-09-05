@@ -89,11 +89,7 @@
     @synchronized (self) {
         [self.serviceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSMutableArray * _Nonnull serviceArray, BOOL * _Nonnull stop) {
             for (WXMComponentService *cacheService in serviceArray.reverseObjectEnumerator) {
-                dispatch_queue_t queue = dispatch_get_main_queue();
-                int64_t delta = (int64_t)(.15 * NSEC_PER_SEC);
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delta), queue, ^{
-                    if (cacheService == service) [serviceArray removeObject:cacheService];
-                });
+                if (cacheService == service) [serviceArray removeObject:cacheService];
             }
         }];
     }
