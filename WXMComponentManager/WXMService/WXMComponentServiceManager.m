@@ -31,6 +31,7 @@
     if (![service respondsToSelector:@selector(setServiceCallback:)]) return nil;
     if (![service isKindOfClass:WXMComponentService.class]) return nil;
     [self addService:service dependKey:[self dependKey:depend]];
+    [self addLoneCallBack:service];
     [self managerServicerDealloc:depend];
     return service;
 }
@@ -52,7 +53,6 @@
         serviceArray = serviceArray ? serviceArray.mutableCopy : @[].mutableCopy;
         [serviceArray addObject:service];
         [self.serviceDictionary setObject:serviceArray forKey:dependKey];
-        [self addLoneCallBack:service];
     }
 }
 
@@ -83,6 +83,20 @@
     WXMPreventCrashEnd
 }
 
+/** 添加block */
+- (void)addLoneCallBack:(WXMComponentService *)service {
+    [service setValue:[self loneCallBack:service] forKey:WXM_REMOVE_CALLBACK];
+}
+
+/** 获取销毁的block */
+- (LoneCallBack)loneCallBack:(WXMComponentService *)service  {
+    __weak typeof(service) weakService = service;
+    return ^{
+        __strong __typeof(weakService) strongService = weakService;
+        [[WXMComponentServiceManager sharedInstance] freeRetainService:strongService];
+    };
+}
+
 /** 释放 */
 - (void)freeRetainService:(WXMComponentService *)service {
     if (!service) return;
@@ -103,20 +117,6 @@
     if ([self.serviceDictionary objectForKey:dependKey]) {
         [self.serviceDictionary removeObjectForKey:dependKey];
     }
-}
-
-/** 添加block */
-- (void)addLoneCallBack:(WXMComponentService *)service {
-    [service setValue:[self loneCallBack:service] forKey:WXM_REMOVE_CALLBACK];
-}
-
-/** 获取销毁的block */
-- (LoneCallBack)loneCallBack:(WXMComponentService *)service  {
-    __weak typeof(service) weakService = service;
-    return ^{
-        __strong __typeof(weakService) strongService = weakService;
-        [[WXMComponentServiceManager sharedInstance] freeRetainService:strongService];
-    };
 }
 
 /** 是否存在当前service */

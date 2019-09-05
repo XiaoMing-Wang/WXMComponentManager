@@ -27,4 +27,5 @@ static WXM_SIGNAL const WXM_MESSAGE_PHOTO = @"WXM_MESSAGE_PHOTO";
 
 @protocol WXMTestServiceProtocol <WXMServiceFeedBack>
 - (void)haha;
+- (void)heihei:(void (^)(void))block;
 @end

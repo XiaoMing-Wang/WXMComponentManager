@@ -21,9 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 /** 创建单例service */
 - (id)serviceCacheProvide:(Protocol *)protocol;
 
-
-- (id)serviceCacheProvide:(Protocol *)protocol depend:(id)depend;
-
 @end
 
 NS_ASSUME_NONNULL_END
