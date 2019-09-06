@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class WXMSignal;
 @class WXMComponentError;
 @class WXMParameterObject;
+@class WXMComponentService;
 
 #define WXM_COMPONENT @"component"
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
@@ -33,10 +34,10 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 
 /** 路由类型 */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
-typedef void (^LoneCallBack) (void);
 typedef void (^SignalCallBack) (id params);
 typedef void (^ObserveCallBack) (WXMSignal *signal);
 typedef void (^ServiceCallBack) (WXMComponentError *response);
+typedef void (^FreeServiceCallBack) (WXMComponentService *service);
 typedef NS_ENUM(NSUInteger, WXMRouterType) {
     WXMRouterType_component = 0, /** viewcontroller */
     WXMRouterType_push,          /** push */

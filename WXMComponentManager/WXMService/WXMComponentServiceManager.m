@@ -10,10 +10,10 @@
 #import "WXMComponentManager.h"
 #import "WXMComponentConfiguration.h"
 #import "WXMComponentServiceManager.h"
-
 @interface WXMComponentServiceManager ()
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *>*serviceDictionary;
 @end
+
 @implementation WXMComponentServiceManager
 
 + (instancetype)sharedInstance {
@@ -31,7 +31,7 @@
     if (![service respondsToSelector:@selector(setServiceCallback:)]) return nil;
     if (![service isKindOfClass:WXMComponentService.class]) return nil;
     [self addService:service dependKey:[self dependKey:depend]];
-    [self addLoneCallBack:service];
+    [self addFreeServiceCallBack:service];
     [self managerServicerDealloc:depend];
     return service;
 }
@@ -84,17 +84,11 @@
 }
 
 /** 添加block */
-- (void)addLoneCallBack:(WXMComponentService *)service {
-    [service setValue:[self loneCallBack:service] forKey:WXM_REMOVE_CALLBACK];
-}
-
-/** 获取销毁的block */
-- (LoneCallBack)loneCallBack:(WXMComponentService *)service  {
-    __weak typeof(service) weakService = service;
-    return ^{
-        __strong __typeof(weakService) strongService = weakService;
-        [[WXMComponentServiceManager sharedInstance] freeRetainService:strongService];
+- (void)addFreeServiceCallBack:(WXMComponentService *)service {
+    FreeServiceCallBack serviceCallBack = ^(WXMComponentService *service) {
+        [[WXMComponentServiceManager sharedInstance] freeRetainService:service];
     };
+    [service setValue:serviceCallBack forKey:WXM_REMOVE_CALLBACK];
 }
 
 /** 释放 */
@@ -112,8 +106,8 @@
 /** 释放当前对象的所有servicer */
 - (void)freeServiceWithDepend:(id)depend {
     if (self.serviceDictionary.allKeys.count == 0 || !self.serviceDictionary) return;
-    if (!depend) return;
     NSString *dependKey = [self dependKey:depend];
+    if (!depend || !dependKey) return;
     if ([self.serviceDictionary objectForKey:dependKey]) {
         [self.serviceDictionary removeObjectForKey:dependKey];
     }

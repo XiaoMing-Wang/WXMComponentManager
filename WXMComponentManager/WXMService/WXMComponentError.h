@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WXMComponentError : NSObject
 
+/** 是否缓存 */
+@property (nonatomic, assign) BOOL isCache;
+
 /** 是否成功 */
 @property (nonatomic, assign) BOOL success;
 
