@@ -10,14 +10,21 @@
 #import "WXMComponentData.h"
 #import "WXMComponentBridge.h"
 #import "WXMComponentContext.h"
+
 @interface WXMSignalContext ()
 @property (nonatomic, strong) NSMutableArray *signArray;
 @end
+
 @interface WXMSignalDisposable ()
 @property (nonatomic, weak) id removeTarget;
 @property (nonatomic, copy) WXM_SIGNAL remoSignal;
 @property (nonatomic, copy) void (^callback)(void);
 @end
+
+@interface WXMObserveContext ()
+@property (nonatomic, assign) BOOL coldSignals;
+@end
+
 @implementation WXMObserveContext
 
 #pragma mark 监听
@@ -33,6 +40,14 @@
         listenObject.callback = [callback copy];
         [self addSignal:listenObject];
         
+        /** 冷信号直接返回 */
+        if (self.coldSignals && callback) {
+            WXMSignal *cacheSignal = objc_getAssociatedObject(self, WXM_SIGNAL_CACHE);
+            callback(cacheSignal);
+        } else if(self.coldSignals == NO) {
+            [WXMComponentBridge removeObserveKeyPath:self.signal];
+        }
+                
         /** disposable需要强持有context */
         WXMSignalDisposable *disposable = [WXMSignalDisposable disposable:^{
             NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
@@ -54,6 +69,8 @@
     NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
     NSMutableArray *arrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
     [arrayMutable addObject:listenObject];
+    
+    if (!self.target) return;
     objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, arrayMutable, 1);
     [WXMComponentBridge addSignalReceive:self.target];
 }
@@ -68,7 +85,14 @@
             [arrayMutable removeObject:listenObject];
         }
     }
+    
+    if (!self.target) return;
     objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, arrayMutable, 1);
+}
+
+- (WXMObserveContext *)coldSignal {
+    self.coldSignals = YES;
+    return self;
 }
 
 @end

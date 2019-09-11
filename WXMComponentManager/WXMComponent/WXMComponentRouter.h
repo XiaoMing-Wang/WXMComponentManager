@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** present://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController */
 /** push://WXMPhotoInterFaceProtocol/routeAchieveWXMPhotoViewController */
 /** component://WXMPhotoInterFaceProtocol */
+
 @interface WXMComponentRouter : NSObject
 
 + (instancetype)sharedInstance;

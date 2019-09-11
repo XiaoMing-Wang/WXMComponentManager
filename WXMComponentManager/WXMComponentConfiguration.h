@@ -5,7 +5,6 @@
 //  Created by edz on 2019/7/7.
 //  Copyright © 2019 wq. All rights reserved.
 //
-NS_ASSUME_NONNULL_BEGIN
 @class WXMSignal;
 @class WXMComponentError;
 @class WXMParameterObject;
@@ -15,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
 #define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
 #define WXM_REMOVE_CALLBACK @"__WXM_REMOVE_CALLBACK"
+#define WXM_SIGNAL_CACHE @"__WXM_SIGNAL_CACHE"
 
 #define WXMDEBUG DEBUG
 #define WXMPreventCrashBegin  @try {
@@ -33,6 +33,7 @@ char * k##procotol##_ser \
 WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 
 /** 路由类型 */
+/** static WXM_SIGNAL const WXM_MESSAGE_PHOTO = @"WXM_MESSAGE_PHOTO"; */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
 typedef void (^SignalCallBack) (id params);
 typedef void (^ObserveCallBack) (WXMSignal *signal);
@@ -57,10 +58,9 @@ typedef NS_ENUM(NSUInteger, WXMRouterType) {
 /** Service协议 */
 @protocol WXMServiceFeedBack <NSObject>
 - (nullable WXMComponentError *)cacheDataSource;
-- (void)setServiceCallback:(ServiceCallBack)callback;
+- (void)setServiceCallback:(ServiceCallBack _Nonnull )callback;
 - (void)sendNext:(WXMComponentError * _Nullable)response;
 @end
 
 #endif /* WXMComponentConfiguration_h */
 
-NS_ASSUME_NONNULL_END

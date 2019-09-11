@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id object;
 
 + (instancetype)error:(NSInteger)code message:(NSString *)message object:(id)object;
-
 @end
 
 NS_ASSUME_NONNULL_END

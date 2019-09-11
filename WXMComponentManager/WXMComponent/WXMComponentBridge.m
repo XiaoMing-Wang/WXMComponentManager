@@ -13,12 +13,12 @@
 static char parameterKey;
 static char callbackKey;
 static NSPointerArray *_allInstanceTarget;
+static NSMutableDictionary *_allObserveObject;
 @implementation WXMComponentBridge
 
 + (void)load {
-    if (!_allInstanceTarget) {
-        _allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
-    }
+    if (!_allInstanceTarget) _allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
+    if (!_allObserveObject) _allObserveObject = @{}.mutableCopy;
 }
 
 + (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
@@ -64,6 +64,8 @@ static NSPointerArray *_allInstanceTarget;
         WXMObserveContext *context = [[WXMObserveContext alloc] init];
         context.target = target;
         context.signal = signal;
+        WXMSignal *cacheSignal = [_allObserveObject objectForKey:signal];
+        if (cacheSignal) objc_setAssociatedObject(context, WXM_SIGNAL_CACHE, cacheSignal, 1);
         return context;
     };
 }
@@ -89,7 +91,16 @@ static NSPointerArray *_allInstanceTarget;
     
     dispatch_queue_t queque = dispatch_queue_create("WXM_Goyakod", DISPATCH_QUEUE_CONCURRENT);
     dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
+    
+    /** 删除nil指针 */
     [WXMComponentBridge cleanTargetArray];
+    
+    /** 缓存传递参数 */
+    NSString *keyPath = context.signal ?: @"";
+    WXMSignal *signalObjs = [WXMComponentBridge achieve:context];
+    if (keyPath && signalObjs) [_allObserveObject setObject:signalObjs forKey:keyPath];
+    if (keyPath && signalObjs == nil) [_allObserveObject removeObjectForKey:keyPath];
+    
     dispatch_async(queque, ^{
         for (id<WXMComponentFeedBack> obj in _allInstanceTarget) {
             
@@ -99,10 +110,9 @@ static NSPointerArray *_allInstanceTarget;
             if ([obj respondsToSelector:@selector(wc_signals)]) {
                 NSArray <WXM_SIGNAL>*signalArray = [obj wc_signals];
                 if ([signalArray isKindOfClass:NSArray.class] && signalArray.count > 0){
-                    WXMSignal * signal = [WXMComponentBridge achieve:context];
                     BOOL exist = [signalArray containsObject:context.signal];
                     BOOL res = [obj respondsToSelector:@selector(wc_receivesSignalObject:)];
-                    if (exist && res) [obj wc_receivesSignalObject:signal];
+                    if (exist && res) [obj wc_receivesSignalObject:signalObjs];
                 }
             }
             
@@ -130,6 +140,12 @@ static NSPointerArray *_allInstanceTarget;
     }
 }
 
++ (void)removeObserveKeyPath:(WXM_SIGNAL)signal {
+    if ([_allObserveObject objectForKey:signal]) {
+        [_allObserveObject removeObjectForKey:signal];
+    }
+}
+
 /** 获取一个YDOSignal */
 + (WXMSignal *)achieve:(WXMSignalContext *)context {
     WXMSignal * signal = [WXMSignal new];
@@ -147,6 +163,7 @@ static NSPointerArray *_allInstanceTarget;
         id obj = [_allInstanceTarget pointerAtIndex:i];
         if (obj == target) haveTarget = YES;
     }
+    
     if(!haveTarget) [_allInstanceTarget addPointer:(__bridge void *)(target)];
 }
 

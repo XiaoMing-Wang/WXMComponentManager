@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/** 路由传递参数对象 */
+/** 路由传递参数对象(很少用) */
 @interface WXMParameterObject : NSObject
 @property (nonatomic, copy) NSDictionary *parameter;
 @property (nonatomic, copy) SignalCallBack callback;

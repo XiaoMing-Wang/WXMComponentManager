@@ -14,19 +14,18 @@ NS_ASSUME_NONNULL_BEGIN
 @class WXMObserveContext;
 @interface WXMComponentBridge : NSObject
 
+#pragma mark A-B单向传递
+
 /** 获取路由传递下来的参数 */
 + (NSDictionary * (^)(id target))parameter;
-
-/** 路由调用时的回调 */
 + (void (^)(id target, NSDictionary *_Nullable parameter))callBackForward;
 
-/** 发送 */
+/** 发送信号 监听信号 */
 + (WXMSignalContext * (^)(WXM_SIGNAL signal, id _Nullable parameter))sendSignal;
-
-/** 监听*/
 + (WXMObserveContext * (^)(id target, WXM_SIGNAL signal))observe;
 
 #pragma mark 内部调用
++ (void)removeObserveKeyPath:(id)signal;
 + (void)addSignalReceive:(id)target;
 + (void)handleParametersWithTarget:(id)target parameters:(id)parameter;
 @end

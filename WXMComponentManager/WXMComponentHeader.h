@@ -7,24 +7,26 @@
 #define weakifyself autoreleasepool {} __weak typeof(self) weakself = self;
 #define strongifyself autoreleasepool {} __strong __typeof(weakself) self = weakself;
 
-#define WXMRouterInstance [WXMComponentRouter sharedInstance]
-#define WXMMangerInstance [WXMComponentManager sharedInstance]
-#define WXMSeiviceInstance [WXMComponentServiceManager sharedInstance]
-#define WXMBridgeParameter(target) WXMComponentBridge.parameter(target)
-#define WXMBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
-#define WXMBridgeSendSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)
+#define WCRouterInstance [WXMComponentRouter sharedInstance]
+#define WCMangerInstance [WXMComponentManager sharedInstance]
+#define WCSeiviceInstance [WXMComponentServiceManager sharedInstance]
 
-#define WXMBridgeCallBack(target, parameter) \
-WXMComponentBridge.callBackForward(target, parameter)
+/** A-B界面获取参数和回调 */
+#define WCBridgeParameter(target) WXMComponentBridge.parameter(target)
+#define WCBridgeCallBack(target, parameter) WXMComponentBridge.callBackForward(target, parameter)
 
+/** 信号 */
+#define WCBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
+#define WCBridgeSendSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)
+
+/** Service */
 #define WCService(protocols) \
 [[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols) depend:self]
 
 #define WCServiceUnique(protocols) \
 [[WXMComponentServiceManager sharedInstance] serviceCacheProvide:@protocol(protocols)]
 
-#define WCError(code, message, object) \
-[WXMComponentError error:code message:message object:object];
+#define WCError(code, message, object) [WXMComponentError error:code message:message object:object];
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"
