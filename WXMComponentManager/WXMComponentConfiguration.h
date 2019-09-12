@@ -26,24 +26,17 @@
 #define WXMKitSerName "WXMModuleClass"
 #define WXMKitDATA(sectName) __attribute((used, section("__DATA, "#sectName" ")))
 
-/** 使用该宏注册协议 */
-#define WXMKitService(serviceInstance, procotol) \
-class WXMComponentRouter;\
-char * k##procotol##_ser \
-WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
-
 /** 路由类型 */
-/** static WXM_SIGNAL const WXM_MESSAGE_PHOTO = @"WXM_MESSAGE_PHOTO"; */
 typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
 typedef void (^SignalCallBack) (id params);
 typedef void (^ObserveCallBack) (WXMSignal *signal);
 typedef void (^ServiceCallBack) (WXMComponentError *response);
 typedef void (^FreeServiceCallBack) (WXMComponentService *service);
-typedef NS_ENUM(NSUInteger, WXMRouterType) {
-    WXMRouterType_component = 0, /** viewcontroller */
-    WXMRouterType_push,          /** push */
-    WXMRouterType_present,       /** present */
-    WXMRouterType_parameter,     /** 传参 */
+typedef NS_ENUM(NSUInteger, WCRouterType) {
+    WCRouterType_component = 0, /** viewcontroller */
+    WCRouterType_push,          /** push */
+    WCRouterType_present,       /** present */
+    WCRouterType_parameter,     /** 传参 */
 };
 
 /** 模块交互协议需要处理消息的遵循该协议  */

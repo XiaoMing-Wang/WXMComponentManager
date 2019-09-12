@@ -52,13 +52,14 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
 
 /** 注册组件 */
 + (void)load {
-    NSArray * array = WQReadConfiguration(WXMKitSerName);
+    NSArray *array = WQReadConfiguration(WXMKitSerName);
     [array enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
         NSDictionary * dictionary = [self jsonToDictionary:obj];
         if (![dictionary isKindOfClass:NSDictionary.class]) return;
         
         NSString *protocol = dictionary.allKeys.firstObject;
         NSString *service = dictionary.allValues.firstObject;
+        
         
         /** 注册组件 */
         [[WXMComponentManager sharedInstance] addService:service protocol:protocol];

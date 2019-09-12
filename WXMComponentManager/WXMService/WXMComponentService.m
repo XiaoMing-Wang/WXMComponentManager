@@ -20,16 +20,21 @@
     
     _serviceCallBack = [callback copy];
     if (callback == nil) return;
+    WXMComponentError *cacheDataSource = nil;
+    if ([self respondsToSelector:@selector(cacheDataSource)]) {
+        cacheDataSource = [self cacheDataSource];
+    }
+    
     if (self.responseCache) {
         
         /** 先调用后setServiceCallback 回调后释放service */
         callback(self.responseCache);
         [self releaseServiceSelf];
         
-    } else if (self.cacheDataSource) {
+    } else if (cacheDataSource) {
         
         /** 加载缓存不释放service */
-        callback(self.cacheDataSource);
+        callback(cacheDataSource);
     }
 }
 
@@ -45,9 +50,9 @@
 /** 释放service */
 - (void)releaseServiceSelf {
     dispatch_queue_t queue = dispatch_get_main_queue();
-    int64_t delta = (int64_t)(.1f * NSEC_PER_SEC);
+    int64_t delta = (int64_t)(.12f * NSEC_PER_SEC);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delta), queue, ^{
-        if (self.freeServiceCallBack) self.freeServiceCallBack(self);
+        if (self.freeServiceCallBack && self) self.freeServiceCallBack(self);
     });
 }
 

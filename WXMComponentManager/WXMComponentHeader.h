@@ -7,6 +7,22 @@
 #define weakifyself autoreleasepool {} __weak typeof(self) weakself = self;
 #define strongifyself autoreleasepool {} __strong __typeof(weakself) self = weakself;
 
+/** 使用该宏注册协议 */
+#define WCKitService(serviceInstance, procotol) \
+class NSObject; \
+char *k##procotol##_ser \
+WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
+
+/** 协议声明 */
+#define WC_PROTOCOL_STATEMENT(aProtocol) \
+class NSObject; \
+@protocol aProtocol \
+@end
+
+/** 快速定义信号 */
+#define __WCSIGNAL__(signal, describe) static WXM_SIGNAL const signal = (@#signal);
+
+/** 单例 */
 #define WCRouterInstance [WXMComponentRouter sharedInstance]
 #define WCMangerInstance [WXMComponentManager sharedInstance]
 #define WCSeiviceInstance [WXMComponentServiceManager sharedInstance]

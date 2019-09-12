@@ -14,8 +14,8 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
-    WXMRouterTypeWhether = 0,
-    WXMRouterTypeObject,
+    WCRouterTypeWhether = 0,
+    WCRouterTypeObject,
 };
 
 @implementation WXMComponentRouter
@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 
 /** 是否可以打开 */
 - (BOOL)canOpenUrl:(NSString * _Nonnull)url {
-    id results = [self objUrl:url passObj:nil routerType:WXMRouterTypeWhether];
+    id results = [self objUrl:url passObj:nil routerType:WCRouterTypeWhether];
     if ([results boolValue] && results != nil) return YES;
     return NO;
 }
@@ -62,7 +62,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 - (id)objectWithUrl:(NSString *)url obj:(id _Nullable)obj {
     if (![NSURL URLWithString:url].scheme) return nil;
     if ([self isComponent:url]) return  [self viewControllerWithUrl:url obj:obj];
-    return [self objUrl:url passObj:obj routerType:WXMRouterTypeObject];
+    return [self objUrl:url passObj:obj routerType:WCRouterTypeObject];
 }
 
 /** 打开viewcontroller */
@@ -121,9 +121,9 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         
         if (WXMDEBUG) NSLog(@"成功调用");
         id __target = nil;
-        if (routerType == WXMRouterTypeWhether) {
+        if (routerType == WCRouterTypeWhether) {
             return @(YES);
-        } else if (routerType == WXMRouterTypeObject)  {
+        } else if (routerType == WCRouterTypeObject)  {
             __target = [service performSelector:selReal withObject:parameter];
             [self handleParametersWithTarget:__target parameters:parameter];
         }
@@ -173,13 +173,13 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
 }
 
 /** 生成路由 */
-- (NSString *(^)(WXMRouterType type, NSString *protocol, ...))createRoute {
-    return ^NSString *(WXMRouterType type, NSString *protocol, ...) {
+- (NSString *(^)(WCRouterType type, NSString *protocol, ...))createRoute {
+    return ^NSString *(WCRouterType type, NSString *protocol, ...) {
         NSString *header = @"";
-        if (type == WXMRouterType_component) header = WXM_COMPONENT;
-        if (type == WXMRouterType_push) header = @"push";
-        if (type == WXMRouterType_present) header = @"present";
-        if (type == WXMRouterType_parameter) header = @"parameter";
+        if (type == WCRouterType_component) header = WXM_COMPONENT;
+        if (type == WCRouterType_push) header = @"push";
+        if (type == WCRouterType_present) header = @"present";
+        if (type == WCRouterType_parameter) header = @"parameter";
         if (header.length == 0) return nil;
         NSString *aString = [NSString stringWithFormat:@"%@://%@",header,protocol];
         

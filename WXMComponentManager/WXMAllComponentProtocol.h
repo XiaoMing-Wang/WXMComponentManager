@@ -11,25 +11,17 @@
 
 @end
 
-/** static WXM_SIGNAL  WXM_MESSAGE_PHOTO_HEAD = @"WXM_MESSAGE_PHOTO_HEAD"; */
+@WC_PROTOCOL_STATEMENT(KVOViewControllerProcotol);
+@WC_PROTOCOL_STATEMENT(KVOViewController2Procotol);
 
-/**  */
-static WXM_SIGNAL const WXM_MESSAGE_PHOTO = @"WXM_MESSAGE_PHOTO";
-
-/**  */
-@protocol WXMPhotoComponentProtocol <WXMServiceFeedBack>
-
-@end
-
-@protocol KVOViewControllerProcotol <WXMServiceFeedBack>
-
-@end
-
-@protocol KVOViewController2Procotol <WXMServiceFeedBack>
-
-@end
-
+__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD, @"发送图片回调通知");
+__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD1, @"发送图片回调通知");
+__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD2, @"发送图片回调通知");
+__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD3, @"发送图片回调通知");
+__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD4, nil);
 @protocol WXMTestServiceProtocol <WXMServiceFeedBack>
+
+
 - (void)haha;
 - (void)heihei:(void (^)(void))block;
 @end

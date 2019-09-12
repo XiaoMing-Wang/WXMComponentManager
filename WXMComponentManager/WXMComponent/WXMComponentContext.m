@@ -45,7 +45,7 @@
             WXMSignal *cacheSignal = objc_getAssociatedObject(self, WXM_SIGNAL_CACHE);
             callback(cacheSignal);
         } else if(self.coldSignals == NO) {
-            [WXMComponentBridge removeObserveKeyPath:self.signal];
+            [WXMComponentBridge removeObserveKeyPath:(NSString *)self.signal];
         }
                 
         /** disposable需要强持有context */

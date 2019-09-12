@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 /** 生成路由 */
-- (NSString *(^)(WXMRouterType type, NSString *protocol, ...))createRoute;
+- (NSString *(^)(WCRouterType type, NSString *protocol, ...))createRoute;
 
 /** 判断url是否可以打开 */
 - (BOOL)canOpenUrl:(NSString *)url;
