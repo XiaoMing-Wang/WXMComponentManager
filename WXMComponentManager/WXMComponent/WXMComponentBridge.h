@@ -16,16 +16,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark A-B单向传递
 
-/** 获取路由传递下来的参数 */
-+ (NSDictionary * (^)(id target))parameter;
-+ (void (^)(id target, NSDictionary *_Nullable parameter))callBackForward;
+/** 跨界面传数据 */
++ (void)setObject:(id)object keyPath:(WXM_SIGNAL)keyPath;
++ (id)objectForKeyPath:(WXM_SIGNAL)keyPath;
 
 /** 发送信号 监听信号 */
 + (WXMSignalContext * (^)(WXM_SIGNAL signal, id _Nullable parameter))sendSignal;
 + (WXMObserveContext * (^)(id target, WXM_SIGNAL signal))observe;
 
+/** 获取上一个界面数据 */
++ (NSDictionary *)parameter:(id)target;
++ (void)sendNext:(id)target parameter:(NSDictionary * _Nullable)parameter;
+
 #pragma mark 内部调用
-+ (void)removeObserveKeyPath:(id)signal;
+#pragma mark 内部调用
+#pragma mark 内部调用
 + (void)addSignalReceive:(id)target;
 + (void)handleParametersWithTarget:(id)target parameters:(id)parameter;
 @end

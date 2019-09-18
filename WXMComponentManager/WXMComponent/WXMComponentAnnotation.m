@@ -44,6 +44,7 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
         if (!str) continue;
         if(str) [configs addObject:str];
     }
+    
     return configs;
 }
 
@@ -59,8 +60,7 @@ static NSArray<NSString *>* WQReadConfiguration(char *section) {
         
         NSString *protocol = dictionary.allKeys.firstObject;
         NSString *service = dictionary.allValues.firstObject;
-        
-        
+                
         /** 注册组件 */
         [[WXMComponentManager sharedInstance] addService:service protocol:protocol];
     }];

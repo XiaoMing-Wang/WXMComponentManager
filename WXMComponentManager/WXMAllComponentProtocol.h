@@ -14,14 +14,14 @@
 @WC_PROTOCOL_STATEMENT(KVOViewControllerProcotol);
 @WC_PROTOCOL_STATEMENT(KVOViewController2Procotol);
 
+
 __WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD, @"发送图片回调通知");
 __WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD1, @"发送图片回调通知");
 __WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD2, @"发送图片回调通知");
 __WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD3, @"发送图片回调通知");
-__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD4, nil);
+__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD4_COLD, @"发送图片回调通知");
+
 @protocol WXMTestServiceProtocol <WXMServiceFeedBack>
-
-
 - (void)haha;
 - (void)heihei:(void (^)(void))block;
 @end

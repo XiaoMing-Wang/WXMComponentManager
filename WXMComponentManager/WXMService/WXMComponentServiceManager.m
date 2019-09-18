@@ -68,8 +68,10 @@
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wundeclared-selector"
         if ([dependInstance respondsToSelector:serviceDeallocSEL] && dependInstance) {
+            WXMPreventCrashBegin
             [[WXMComponentServiceManager sharedInstance] freeServiceWithDepend:dependInstance];
             [dependInstance performSelector:serviceDeallocSEL];
+            WXMPreventCrashEnd
         }
 #pragma clang diagnostic pop
     };
@@ -79,7 +81,6 @@
     Method deallocMethod = class_getInstanceMethod(class, NSSelectorFromString(@"dealloc"));
     Method serviceMethod = class_getInstanceMethod(class, serviceDeallocSEL);
     method_exchangeImplementations(deallocMethod, serviceMethod);
-    
     WXMPreventCrashEnd
 }
 

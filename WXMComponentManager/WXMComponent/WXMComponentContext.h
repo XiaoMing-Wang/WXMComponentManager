@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface WXMObserveContext : NSObject
 @property (nonatomic, weak) id target;
 @property (nonatomic, copy) WXM_SIGNAL signal;
-- (WXMObserveContext *)coldSignal;
 - (WXMSignalDisposable *)subscribeNext:(ObserveCallBack)callback;
 @end
 

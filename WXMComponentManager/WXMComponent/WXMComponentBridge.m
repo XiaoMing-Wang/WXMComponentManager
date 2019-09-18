@@ -42,18 +42,23 @@ static NSMutableDictionary *_allObserveObject;
 }
 
 /** 获取路由传递下来的参数 */
-+ (NSDictionary *(^)(id obj))parameter {
-    return ^NSDictionary *(id obj) {
-        return objc_getAssociatedObject(obj, &parameterKey);
-    };
++ (NSDictionary *)parameter:(id)target {
+    return objc_getAssociatedObject(target, &parameterKey);
 }
 
 /** 路由调用时的回调 */
-+ (void (^)(id target, NSDictionary *_Nullable parameter))callBackForward {
-    return ^(id target, NSDictionary *parameter) {
-        SignalCallBack callback = objc_getAssociatedObject(target, &callbackKey);
-        if (callback) callback(parameter);
-    };
++ (void)sendNext:(id)target parameter:(NSDictionary * _Nullable)parameter {
+    SignalCallBack callback = objc_getAssociatedObject(target, &callbackKey);
+    if (callback) callback(parameter);
+}
+
+/** 跨界面传数据 */
++ (void)setObject:(id)object keyPath:(WXM_SIGNAL)keyPath {
+    if (object && keyPath) [_allObserveObject setObject:object forKey:keyPath];
+}
+
++ (id)objectForKeyPath:(WXM_SIGNAL)keyPath {
+    return [_allObserveObject objectForKey:keyPath];
 }
 
 #pragma mark _____________________________ 收发信号
@@ -64,8 +69,6 @@ static NSMutableDictionary *_allObserveObject;
         WXMObserveContext *context = [[WXMObserveContext alloc] init];
         context.target = target;
         context.signal = signal;
-        WXMSignal *cacheSignal = [_allObserveObject objectForKey:signal];
-        if (cacheSignal) objc_setAssociatedObject(context, WXM_SIGNAL_CACHE, cacheSignal, 1);
         return context;
     };
 }
@@ -94,12 +97,7 @@ static NSMutableDictionary *_allObserveObject;
     
     /** 删除nil指针 */
     [WXMComponentBridge cleanTargetArray];
-    
-    /** 缓存传递参数 */
-    NSString *keyPath = context.signal ?: @"";
     WXMSignal *signalObjs = [WXMComponentBridge achieve:context];
-    if (keyPath && signalObjs) [_allObserveObject setObject:signalObjs forKey:keyPath];
-    if (keyPath && signalObjs == nil) [_allObserveObject removeObjectForKey:keyPath];
     
     dispatch_async(queque, ^{
         for (id<WXMComponentFeedBack> obj in _allInstanceTarget) {
@@ -137,12 +135,6 @@ static NSMutableDictionary *_allObserveObject;
                 if (listenObjec.callback) listenObjec.callback(signal);
             });
         }
-    }
-}
-
-+ (void)removeObserveKeyPath:(WXM_SIGNAL)signal {
-    if ([_allObserveObject objectForKey:signal]) {
-        [_allObserveObject removeObjectForKey:signal];
     }
 }
 
