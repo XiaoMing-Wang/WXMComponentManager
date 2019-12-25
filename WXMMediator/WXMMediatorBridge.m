@@ -7,7 +7,6 @@
 //
 #import <objc/runtime.h>
 #import "WXMMediatorBridgeData.h"
-#import "WXMWeakDictionary.h"
 #import "WXMMediatorBridge.h"
 #import "WXMMediatorBridgeContext.h"
 

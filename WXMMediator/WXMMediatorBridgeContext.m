@@ -15,8 +15,6 @@
 @end
 
 @interface WXMMediatorDisposable ()
-@property (nonatomic, weak) id removeTarget;
-@property (nonatomic, copy) WXM_MEDIATOR_SIGNAL remoSignal;
 @property (nonatomic, copy) void (^callback)(void);
 @end
 
@@ -31,22 +29,20 @@
     if (!self.signal) return nil;
     
     @synchronized (self.target) {
+        
+        /** 删除同名sign */
         [self removeSameSignal];
-       
         WXMMediatorListen *listenObject = [WXMMediatorListen new];
         listenObject.signal = self.signal;
         listenObject.callback = [callback copy];
         [self addSignal:listenObject];
-                
+        
         /** disposable需要强持有context */
         WXMMediatorDisposable *disposable = [WXMMediatorDisposable disposable:^{
             NSDictionary *dic = objc_getAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY);
             NSMutableDictionary *dictionaryM = dic ? dic.mutableCopy : @{}.mutableCopy;
-            [dictionaryM removeObjectForKey:self.signal];
-            
-            if (!self.target || !self) return;
-            NSDictionary *newDict = dictionaryM.copy;
-            objc_setAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY, newDict, 1);
+            [dictionaryM setValue:nil forKey:self.signal];
+            objc_setAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY, dictionaryM, 1);
         }];
         
         return disposable;
@@ -57,28 +53,17 @@
 - (void)addSignal:(WXMMediatorListen *)listenObject {
     NSDictionary *listens = objc_getAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY);
     NSMutableDictionary *dictionaryM = listens ? listens.mutableCopy : @{}.mutableCopy;
-    
-    if (dictionaryM && listenObject.signal) {
-        [dictionaryM setValue:listenObject forKey:listenObject.signal];
-    }
-    
-    if (!self.target) return;
+    [dictionaryM setValue:listenObject forKey:listenObject.signal];
     objc_setAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY, dictionaryM, 1);
     [WXMMediatorBridge addSignalReceive:self.target];
 }
 
 /** 删除当前对象同名信号 */
 - (void)removeSameSignal {
-    NSArray *listens = objc_getAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY);
-    NSMutableArray *arrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
-    for (int i = 0; i < arrayMutable.count; i++) {
-        WXMMediatorListen *listenObject = [arrayMutable objectAtIndex:i];
-        if ([listenObject.signal isEqualToString:self.signal]) {
-            [arrayMutable removeObject:listenObject];
-        }
-    }
-    if (!self.target) return;
-    objc_setAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY, arrayMutable, 1);
+    NSDictionary *listens = objc_getAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY);
+    NSMutableDictionary *dictionaryM  = listens ? listens.mutableCopy : @{}.mutableCopy;
+    [dictionaryM setValue:nil forKey:self.signal];
+    objc_setAssociatedObject(self.target, WXMMEDIATOR_SIGNAL_KEY, dictionaryM, 1);
 }
 
 @end

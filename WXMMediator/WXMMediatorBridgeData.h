@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/** 模块发送信号对象 */
+/** 信号对象 */
 @interface WXMMediatorSignal : NSObject
 @property (nonatomic, copy) WXM_MEDIATOR_SIGNAL signal;
 @property (nonatomic, strong) id object;
