@@ -5,7 +5,6 @@
 //  Created by wq on 2019/12/25.
 //  Copyright © 2019 wxm. All rights reserved.
 //
-#import "WXMMediatorError.h"
 #import "WXMMediatorBaseService.h"
 
 @interface WXMMediatorBaseService ()

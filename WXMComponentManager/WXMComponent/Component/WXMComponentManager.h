@@ -5,9 +5,8 @@
 //  Created by wq on 2019/4/19.
 //  Copyright © 2019年 wq. All rights reserved.
 
-
-#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 #import "WXMComponentConfiguration.h"
 
 NS_ASSUME_NONNULL_BEGIN

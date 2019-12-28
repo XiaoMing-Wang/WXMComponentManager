@@ -97,7 +97,7 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
         /** 判断传递参数是什么类型 */
         id parameter = nil;
         if (passObj == nil) {
-            parameter = [self paramsWithString:query];
+            parameter = nil;
         } else if (passObj != nil && [passObj isKindOfClass:[NSDictionary class]]) {
             parameter = passObj;
         } else {
@@ -196,20 +196,20 @@ typedef NS_ENUM(NSUInteger, WXMComponentRouterType) {
     };
 }
 
-/** 获取参数 */
-- (NSDictionary *)paramsWithString:(NSString*)paramString {
-    if (paramString.length == 0) return nil;
-    NSMutableDictionary * dictionary = @{}.mutableCopy;
-    NSArray *arrays = [paramString componentsSeparatedByString:@"&"];
-    [arrays enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
-        if ([obj containsString:@"="]) {
-            NSString * key = [obj componentsSeparatedByString:@"="].firstObject;
-            NSString * value = [obj componentsSeparatedByString:@"="].lastObject;
-            if(key) [dictionary setObject:value forKey:key];
-        }
-    }];
-    return dictionary;
-}
+///** 获取参数 */
+//- (NSDictionary *)paramsWithString:(NSString*)paramString {
+//    if (paramString.length == 0) return nil;
+//    NSMutableDictionary * dictionary = @{}.mutableCopy;
+//    NSArray *arrays = [paramString componentsSeparatedByString:@"&"];
+//    [arrays enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
+//        if ([obj containsString:@"="]) {
+//            NSString * key = [obj componentsSeparatedByString:@"="].firstObject;
+//            NSString * value = [obj componentsSeparatedByString:@"="].lastObject;
+//            if(key) [dictionary setObject:value forKey:key];
+//        }
+//    }];
+//    return dictionary;
+//}
 
 /** 获取协议名 */
 - (NSString *)protocol:(NSString *)host {

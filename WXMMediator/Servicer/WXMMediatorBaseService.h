@@ -6,7 +6,6 @@
 //  Copyright © 2019 wxm. All rights reserved.
 //
 #import <Foundation/Foundation.h>
-#import "WXMMediatorError.h"
 #import "WXMMediatorConfiguration.h"
 
 NS_ASSUME_NONNULL_BEGIN
