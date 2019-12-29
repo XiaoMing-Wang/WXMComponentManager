@@ -37,15 +37,10 @@
         
         /** disposable需要强持有context */
         WXMSignalDisposable *disposable = [WXMSignalDisposable disposable:^{
-            NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
-            NSMutableArray *weekArrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
-            for (WXMListenObject *listenObject in listens.reverseObjectEnumerator) {
-                if ([listenObject.signal isEqualToString:self.signal]) {
-                    [weekArrayMutable removeObject:listenObject];
-                }
-            }
-            if (!self.target || !self) return;
-            objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, weekArrayMutable.copy, 1);
+            NSDictionary *dic = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
+            NSMutableDictionary *dictionaryM = dic ? dic.mutableCopy : @{}.mutableCopy;
+            [dictionaryM setValue:nil forKey:self.signal];
+            objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, dictionaryM, 1);
         }];
         
         return disposable;
@@ -53,28 +48,19 @@
 }
 
 - (void)addSignal:(WXMListenObject *)listenObject {
-    NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
-    NSMutableArray *arrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
-    [arrayMutable addObject:listenObject];
-    
-    if (!self.target) return;
-    objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, arrayMutable, 1);
+    NSDictionary *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
+    NSMutableDictionary *dictionaryM = listens ? listens.mutableCopy : @{}.mutableCopy;
+    [dictionaryM setValue:listenObject forKey:listenObject.signal];
+    objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, dictionaryM, 1);
     [WXMComponentBridge addSignalReceive:self.target];
 }
 
 /** 删除当前对象同名信号 */
 - (void)removeSameSignal {
-    NSArray *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
-    NSMutableArray *arrayMutable = listens ? listens.mutableCopy : @[].mutableCopy;
-    for (int i = 0; i < arrayMutable.count; i++) {
-        WXMListenObject *listenObject = [arrayMutable objectAtIndex:i];
-        if ([listenObject.signal isEqualToString:self.signal]) {
-            [arrayMutable removeObject:listenObject];
-        }
-    }
-    
-    if (!self.target) return;
-    objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, arrayMutable, 1);
+    NSDictionary *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
+    NSMutableDictionary *dictionaryM  = listens ? listens.mutableCopy : @{}.mutableCopy;
+    [dictionaryM setValue:nil forKey:self.signal];
+    objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, dictionaryM, 1);
 }
 @end
 

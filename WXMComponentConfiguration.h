@@ -39,14 +39,14 @@ typedef NS_ENUM(NSUInteger, WCRouterType) {
     WCRouterType_parameter,     /** 传参 */
 };
 
-/** 模块交互协议需要处理消息的遵循该协议  */
-@protocol WXMComponentFeedBack <NSObject>
-@optional
-- (BOOL)wc_cacheImplementer;
-- (nullable NSArray <WXM_SIGNAL>*)wc_signals;
-- (void)wc_receiveParameters:(WXMParameterObject * _Nullable)obj;
-- (void)wc_receivesSignalObject:(WXMSignal * _Nullable)obj;
-@end
+///** 模块交互协议需要处理消息的遵循该协议  */
+//@protocol WXMComponentFeedBack <NSObject>
+//@optional
+//- (BOOL)wc_cacheImplementer;
+//- (nullable NSArray <WXM_SIGNAL>*)wc_signals;
+//- (void)wc_receiveParameters:(WXMParameterObject * _Nullable)obj;
+//- (void)wc_receivesSignalObject:(WXMSignal * _Nullable)obj;
+//@end
 
 /** Service协议 */
 @protocol WXMServiceFeedBack <NSObject>

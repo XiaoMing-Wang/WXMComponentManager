@@ -13,8 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WXMComponentService : NSObject <WXMServiceFeedBack>
 
-
-
 @end
 
 NS_ASSUME_NONNULL_END

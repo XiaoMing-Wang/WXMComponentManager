@@ -27,22 +27,22 @@ class NSObject; \
 #define WCMangerInstance [WXMComponentManager sharedInstance]
 #define WCSeiviceInstance [WXMComponentServiceManager sharedInstance]
 
-/** A-B界面获取参数和回调 */
-#define WCBridgeParameter(target) WXMComponentBridge.parameter(target)
-#define WCBridgeCallBack(target, parameter) WXMComponentBridge.callBackForward(target, parameter)
+///** A-B界面获取参数和回调 */
+//#define WCBridgeParameter(target) WXMComponentBridge.parameter(target)
+//#define WCBridgeCallBack(target, parameter) WXMComponentBridge.callBackForward(target, parameter)
 
 /** 信号 */
 #define WCBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
 #define WCBridgeSendSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)
 
 /** Service */
-#define WCService(protocols) \
-[[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols) depend:self]
-
-#define WCServiceUnique(protocols) \
-[[WXMComponentServiceManager sharedInstance] serviceCacheProvide:@protocol(protocols)]
-
-#define WCError(code, message, object) [WXMComponentError error:code message:message object:object];
+//#define WCService(protocols) \
+//[[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols) depend:self]
+//
+//#define WCServiceUnique(protocols) \
+//[[WXMComponentServiceManager sharedInstance] serviceCacheProvide:@protocol(protocols)]
+//
+//#define WCError(code, message, object) [WXMComponentError error:code message:message object:object];
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"

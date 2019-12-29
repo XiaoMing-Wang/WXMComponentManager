@@ -54,19 +54,7 @@
 - (id)serviceProvideForProtocol:(Protocol *)protocol {
     NSString *protosString = NSStringFromProtocol(protocol);
     NSString *targetString = [self.registeredDic objectForKey:protosString];
-    id<WXMComponentFeedBack> target = [NSClassFromString(targetString) new];
-    
-    if ([target conformsToProtocol:protocol] && target) {
-        
-        /** NSObject做中间类会被释放 接收消息需要强引用不被释放 */
-        BOOL needCache = NO;
-        SEL cacheImp = @selector(wc_cacheImplementer);
-        if ([target respondsToSelector:cacheImp]) needCache = [target wc_cacheImplementer];
-        if (needCache && [target isKindOfClass:[NSObject class]] && target && targetString) {
-            [self.cacheTarget setObject:target forKey:targetString];
-        }
-    }
-    
+    id target = [NSClassFromString(targetString) new];
     if (target) return target;
     [self showAlertController:protosString];
     return nil;
@@ -76,7 +64,7 @@
 - (id)serviceCacheProvideForProtocol:(Protocol *)protocol {
     NSString *protosString = NSStringFromProtocol(protocol);
     NSString *targetString = [self.registeredDic objectForKey:protosString];
-    id<WXMComponentFeedBack> target = [self.cacheTarget objectForKey:targetString];
+    id target = [self.cacheTarget objectForKey:targetString];
     if (target) return target;
     
     target = [self serviceProvideForProtocol:protocol];
@@ -91,7 +79,7 @@
     [self.cacheTarget removeObjectForKey:targetString];
 }
 
-/** 删掉Service */
+/** 删掉target */
 - (void)removeServiceCache:(id)service {
     __block NSString *targetString = nil;
     [self.cacheTarget enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {

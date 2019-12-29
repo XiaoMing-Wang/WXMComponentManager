@@ -7,7 +7,6 @@
 //
 
 #import "WXMComponentData.h"
-@implementation WXMParameterObject @end
 @implementation WXMListenObject @end
 @implementation WXMSignal {
     SignalCallBack _callback;

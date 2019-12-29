@@ -10,56 +10,56 @@
 #import "WXMComponentBridge.h"
 #import "WXMComponentContext.h"
 
-static char parameterKey;
-static char callbackKey;
+/** static char parameterKey; */
+/** static char callbackKey; */
 static NSPointerArray *_allInstanceTarget;
-static NSMutableDictionary *_allObserveObject;
+/** static NSMutableDictionary *_allObserveObject; */
 @implementation WXMComponentBridge
 
 + (void)load {
     if (!_allInstanceTarget) _allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
-    if (!_allObserveObject) _allObserveObject = @{}.mutableCopy;
+    /** if (!_allObserveObject) _allObserveObject = @{}.mutableCopy; */
 }
 
-+ (void)handleParametersWithTarget:(id<WXMComponentFeedBack>)target parameters:(id)parameter {
-    if (!target || !parameter) return;
-    
-    objc_AssociationPolicy policy = OBJC_ASSOCIATION_COPY_NONATOMIC;
-    WXMParameterObject *parameterObject = [WXMParameterObject new];
-    BOOL isDictionary = [parameter isKindOfClass:NSDictionary.class];
-    if (isDictionary) {
-        parameterObject.parameter = (NSDictionary *) parameter;
-        objc_setAssociatedObject(target, &parameterKey, parameter, policy);
-    } else {
-        parameterObject.callback = (SignalCallBack) parameter;
-        objc_setAssociatedObject(target, &callbackKey, parameter, policy);
-    }
-    
-    /** 代理回调 */
-    if ([target respondsToSelector:@selector(wc_receiveParameters:)]) {
-        [target wc_receiveParameters:parameterObject];
-    }
-}
+//+ (void)handleParametersWithTarget:(id)target parameters:(id)parameter {
+//    if (!target || !parameter) return;
+//
+//    objc_AssociationPolicy policy = OBJC_ASSOCIATION_COPY_NONATOMIC;
+//    WXMParameterObject *parameterObject = [WXMParameterObject new];
+//    BOOL isDictionary = [parameter isKindOfClass:NSDictionary.class];
+//    if (isDictionary) {
+//        parameterObject.parameter = (NSDictionary *) parameter;
+//        objc_setAssociatedObject(target, &parameterKey, parameter, policy);
+//    } else {
+//        parameterObject.callback = (SignalCallBack) parameter;
+//        objc_setAssociatedObject(target, &callbackKey, parameter, policy);
+//    }
+//
+//    /** 代理回调 */
+//    if ([target respondsToSelector:@selector(wc_receiveParameters:)]) {
+//        [target wc_receiveParameters:parameterObject];
+//    }
+//}
 
-/** 获取路由传递下来的参数 */
-+ (NSDictionary *)parameter:(id)target {
-    return objc_getAssociatedObject(target, &parameterKey);
-}
-
-/** 路由调用时的回调 */
-+ (void)sendNext:(id)target parameter:(NSDictionary * _Nullable)parameter {
-    SignalCallBack callback = objc_getAssociatedObject(target, &callbackKey);
-    if (callback) callback(parameter);
-}
-
-/** 跨界面传数据 */
-+ (void)setObject:(id)object keyPath:(WXM_SIGNAL)keyPath {
-    if (object && keyPath) [_allObserveObject setObject:object forKey:keyPath];
-}
-
-+ (id)objectForKeyPath:(WXM_SIGNAL)keyPath {
-    return [_allObserveObject objectForKey:keyPath];
-}
+///** 获取路由传递下来的参数 */
+//+ (NSDictionary *)parameter:(id)target {
+//    return objc_getAssociatedObject(target, &parameterKey);
+//}
+//
+///** 路由调用时的回调 */
+//+ (void)sendNext:(id)target parameter:(NSDictionary * _Nullable)parameter {
+//    SignalCallBack callback = objc_getAssociatedObject(target, &callbackKey);
+//    if (callback) callback(parameter);
+//}
+//
+///** 跨界面传数据 */
+//+ (void)setObject:(id)object keyPath:(WXM_SIGNAL)keyPath {
+//    if (object && keyPath) [_allObserveObject setObject:object forKey:keyPath];
+//}
+//
+//+ (id)objectForKeyPath:(WXM_SIGNAL)keyPath {
+//    return [_allObserveObject objectForKey:keyPath];
+//}
 
 #pragma mark _____________________________ 收发信号
 
@@ -97,26 +97,8 @@ static NSMutableDictionary *_allObserveObject;
     
     /** 删除nil指针 */
     [WXMComponentBridge cleanTargetArray];
-    WXMSignal *signalObjs = [WXMComponentBridge achieve:context];
-    
     dispatch_async(queque, ^{
-        for (id<WXMComponentFeedBack> obj in _allInstanceTarget) {
-            
-            /** 信息传递方式1.协议 */
-            /** 信息传递方式1.协议 */
-            /** 信息传递方式1.协议 */
-            if ([obj respondsToSelector:@selector(wc_signals)]) {
-                NSArray <WXM_SIGNAL>*signalArray = [obj wc_signals];
-                if ([signalArray isKindOfClass:NSArray.class] && signalArray.count > 0){
-                    BOOL exist = [signalArray containsObject:context.signal];
-                    BOOL res = [obj respondsToSelector:@selector(wc_receivesSignalObject:)];
-                    if (exist && res) [obj wc_receivesSignalObject:signalObjs];
-                }
-            }
-            
-            /** 信息传递方式2.信号 */
-            /** 信息传递方式2.信号 */
-            /** 信息传递方式2.信号 */
+        for (id obj in _allInstanceTarget) {
             if (obj && context) [self handleSignalWithTarget:obj context:context];
         }
         dispatch_semaphore_signal(lock);
@@ -125,16 +107,15 @@ static NSMutableDictionary *_allObserveObject;
 
 /** 处理信号 */
 + (void)handleSignalWithTarget:(id)target context:(WXMSignalContext *)context {
-    NSArray <WXMListenObject *>*listens = objc_getAssociatedObject(target, WXM_SIGNAL_KEY);
-    if (!listens || listens.count == 0) return;
-    
-    for (WXMListenObject *listenObjec in listens) {
-        if ([listenObjec.signal isEqualToString:context.signal]) {
+    NSDictionary *listens = nil;
+    listens = objc_getAssociatedObject(target, WXM_SIGNAL_KEY);
+    if (!listens || listens.allKeys.count == 0) return;
+    WXMListenObject *listenObjec = [listens valueForKey:context.signal];
+    if (listenObjec && listenObjec.callback) {
+        dispatch_async(dispatch_get_main_queue(), ^{
             WXMSignal *signal = [WXMComponentBridge achieve:context];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (listenObjec.callback) listenObjec.callback(signal);
-            });
-        }
+            listenObjec.callback(signal);
+        });
     }
 }
 
