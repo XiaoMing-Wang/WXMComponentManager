@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   s.name         = "WQComponentManager" 
-  s.version      = "1.3.0"        
+  s.version      = "1.4.0"
   s.license      = "MIT"
-  s.summary      = "键盘自动收起"
+  s.summary      = "组件中间层"
 
   s.homepage     = "https://github.com/XiaoMing-Wang/WQComponentManager" 
   s.source       = { :git => "https://github.com/XiaoMing-Wang/WQComponentManager.git", :tag => "#{s.version}" }
-  s.source_files = "WQComponentManager/Classes/**/*"
+  s.source_files = "WQComponentManager/**/*"
   s.requires_arc = true 
   s.platform     = :ios, "9.0" 
   # s.frameworks   = "UIKit", "Foundation" 
