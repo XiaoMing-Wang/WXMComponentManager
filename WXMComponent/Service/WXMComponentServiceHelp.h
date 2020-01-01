@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class WXMComponentService;
-@interface WXMComponentServiceManager : NSObject
+@class WXMComponentBaseService;
+@interface WXMComponentServiceHelp : NSObject
 
 + (instancetype)sharedInstance;
 

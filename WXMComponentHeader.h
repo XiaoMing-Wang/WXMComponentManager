@@ -11,26 +11,25 @@ class NSObject; \
 char *k##procotol##_ser \
 WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 
-/** 快速定义信号 */
-#define __WCSIGNAL__(signal, describe) static WXM_SIGNAL const signal = (@#signal);
+/** 定义信号 */
+#define WCSIGNAL_DEFINE(signal, describe) \
+class NSObject; \
+static WXM_SIGNAL const signal = (@#signal);
 
 /** 单例 */
 #define WCRouterInstance [WXMComponentRouter sharedInstance]
 #define WCMangerInstance [WXMComponentManager sharedInstance]
-#define WCSeiviceInstance [WXMComponentServiceManager sharedInstance]
+#define WCSeiviceInstance [WXMComponentServiceHelp sharedInstance]
 
 /** 信号 */
 #define WCBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
 #define WCBridgeSendSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)
 
 /** Service */
-//#define WCService(protocols) \
-//[[WXMComponentServiceManager sharedInstance] serviceProvide:@protocol(protocols) depend:self]
-//
-//#define WCServiceUnique(protocols) \
-//[[WXMComponentServiceManager sharedInstance] serviceCacheProvide:@protocol(protocols)]
-//
-//#define WCError(code, message, object) [WXMComponentError error:code message:message object:object];
+#define WCService(aString) [WCSeiviceInstance serviceProvide:@protocol(aString) depend:self];
+
+/** WCError */
+#define WCError(code, message, object) [WXMComponentError error:code message:message object:object];
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"
@@ -41,8 +40,8 @@ WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 #import "WXMComponentData.h"
 #import "WXMComponentAnnotation.h"
 #import "WXMComponentConfiguration.h"
-#import "WXMComponentService.h"
-#import "WXMComponentServiceManager.h"
+#import "WXMComponentBaseService.h"
+#import "WXMComponentServiceHelp.h"
 
 //#import "WXMAllComponentProtocol.h"
 

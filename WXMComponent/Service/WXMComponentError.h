@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** object */
 @property (nonatomic, strong) id object;
 
+/** 初始化 */
 + (instancetype)error:(NSInteger)code message:(NSString *)message object:(id)object;
 
 @end

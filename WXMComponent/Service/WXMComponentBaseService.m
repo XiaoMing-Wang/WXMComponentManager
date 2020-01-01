@@ -6,16 +6,17 @@
 //  Copyright © 2019 wq. All rights reserved.
 //
 #import "WXMComponentManager.h"
-#import "WXMComponentService.h"
-#import "WXMComponentServiceManager.h"
+#import "WXMComponentBaseService.h"
+#import "WXMComponentServiceHelp.h"
 
-@interface WXMComponentService ()
+@interface WXMComponentBaseService ()
 @property (nonatomic, strong) WXMComponentError *responseCache;
 @property (nonatomic, strong, readonly) ServiceCallBack serviceCallBack;
 @property (nonatomic, strong, readonly) FreeServiceCallBack freeServiceCallBack;
 @end
 
-@implementation WXMComponentService
+@implementation WXMComponentBaseService
+
 - (void)setServiceCallback:(ServiceCallBack)callback {
     
     _serviceCallBack = [callback copy];
@@ -30,9 +31,7 @@
     }
     
     WXMComponentError *cacheMediatorError = nil;
-    BOOL accessCache = NO;
-    if ([self respondsToSelector:@selector(accessCache)]) accessCache = self.accessCache;
-    if ([self respondsToSelector:@selector(cacheComponentError)] && accessCache) {
+    if ([self respondsToSelector:@selector(cacheComponentError)] && self.accessCache) {
         cacheMediatorError = self.cacheComponentError;
         if (cacheMediatorError) _serviceCallBack(cacheMediatorError);
     }
@@ -42,9 +41,9 @@
     if (self.serviceCallBack) {
         self.serviceCallBack(response);
         [self releaseServiceSelf];
-    } else {
-        self.responseCache = response;
     }
+    else if (response) self.responseCache = response;
+    else [self releaseServiceSelf];
 }
 
 /** 释放service */
@@ -64,7 +63,7 @@
 }
 
 /** 返回缓存 */
-- (WXMComponentError *_Nullable)cacheDataSource {
+- (WXMComponentError *_Nullable)cacheComponentError {
     return nil;
 }
 

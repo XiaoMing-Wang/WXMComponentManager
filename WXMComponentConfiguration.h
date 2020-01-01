@@ -8,7 +8,7 @@
 @class WXMSignal;
 @class WXMComponentError;
 @class WXMParameterObject;
-@class WXMComponentService;
+@class WXMComponentBaseService;
 
 #define WXM_COMPONENT @"component"
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
@@ -30,7 +30,7 @@ typedef NSString *WXM_SIGNAL NS_STRING_ENUM;
 typedef void (^SignalCallBack) (id params);
 typedef void (^ObserveCallBack) (WXMSignal *signal);
 typedef void (^ServiceCallBack) (WXMComponentError *response);
-typedef void (^FreeServiceCallBack) (WXMComponentService *service);
+typedef void (^FreeServiceCallBack) (WXMComponentBaseService *service);
 typedef NS_ENUM(NSUInteger, WCRouterType) {
     WCRouterType_component = 0, /** viewcontroller */
     WCRouterType_push,          /** push */
@@ -40,11 +40,9 @@ typedef NS_ENUM(NSUInteger, WCRouterType) {
 
 /** Service协议 */
 @protocol WXMServiceFeedBack <NSObject>
-@optional;
+@optional
 @property (nonatomic, assign) BOOL accessCache;
-- (nullable WXMComponentError *)cacheComponentError;
 - (void)setServiceCallback:(ServiceCallBack _Nonnull)callback;
-- (void)sendNext:(WXMComponentError *_Nullable)response;
 @end
 
 #endif /* WXMComponentConfiguration_h */

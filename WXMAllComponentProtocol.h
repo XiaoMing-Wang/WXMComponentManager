@@ -5,8 +5,8 @@
 ////  Created by wq on 2019/6/7.
 ////  Copyright © 2019年 wxm. All rights reserved.
 ////
-//#import <Foundation/Foundation.h>
-//#import "WXMComponentConfiguration.h"
+#import <Foundation/Foundation.h>
+#import "WXMComponentHeader.h"
 //@protocol WXMAllComponentProtocol <NSObject>
 //
 //@end
@@ -18,6 +18,6 @@
 //__WCSIGNAL__(WXM_MESSAGE_PHOTO_HEAD4_COLD, @"发送图片回调通知");
 //
 @protocol WXMTestServiceProtocol <WXMServiceFeedBack>
-- (void)haha;
+- (void)hahaServiceProtocol:(NSString *)aString;
 - (void)heihei:(void (^)(void))block;
 @end
