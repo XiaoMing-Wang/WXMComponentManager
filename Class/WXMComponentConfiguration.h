@@ -15,7 +15,7 @@
 #define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
 #define WXM_REMOVE_CALLBACK @"__WXM_REMOVE_CALLBACK"
 
-#define WXMDEBUG DEBUG
+#define WXMDEBUG 0
 #define WXMPreventCrashBegin  @try {
 #define WXMPreventCrashEnd     } @catch (NSException *exception) {} @finally {}
 #ifndef WXMComponentConfiguration_h
