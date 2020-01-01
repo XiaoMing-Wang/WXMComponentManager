@@ -11,7 +11,7 @@
 #import "WXMComponentConfiguration.h"
 #import "WXMComponentServiceManager.h"
 @interface WXMComponentServiceManager ()
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *>*serviceDictionary;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *serviceDictionary;
 @end
 
 @implementation WXMComponentServiceManager

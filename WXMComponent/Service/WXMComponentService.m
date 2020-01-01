@@ -14,27 +14,27 @@
 @property (nonatomic, strong, readonly) ServiceCallBack serviceCallBack;
 @property (nonatomic, strong, readonly) FreeServiceCallBack freeServiceCallBack;
 @end
-@implementation WXMComponentService
 
+@implementation WXMComponentService
 - (void)setServiceCallback:(ServiceCallBack)callback {
     
     _serviceCallBack = [callback copy];
     if (callback == nil) return;
-    WXMComponentError *cacheDataSource = nil;
-    if ([self respondsToSelector:@selector(cacheDataSource)]) {
-        cacheDataSource = [self cacheDataSource];
-    }
     
     if (self.responseCache) {
         
         /** 先调用后setServiceCallback 回调后释放service */
-        callback(self.responseCache);
+        _serviceCallBack(self.responseCache);
         [self releaseServiceSelf];
-        
-    } else if (cacheDataSource) {
-        
-        /** 加载缓存不释放service */
-        callback(cacheDataSource);
+        return;
+    }
+    
+    WXMComponentError *cacheMediatorError = nil;
+    BOOL accessCache = NO;
+    if ([self respondsToSelector:@selector(accessCache)]) accessCache = self.accessCache;
+    if ([self respondsToSelector:@selector(cacheComponentError)] && accessCache) {
+        cacheMediatorError = self.cacheComponentError;
+        if (cacheMediatorError) _serviceCallBack(cacheMediatorError);
     }
 }
 

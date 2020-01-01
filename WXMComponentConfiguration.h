@@ -14,7 +14,6 @@
 #define WXM_SIGNAL_KEY @"__WXM_SIGNAL_KEY"
 #define WXM_SIGNAL_CALLBACK @"__WXM_SIGNAL_CALLBACK"
 #define WXM_REMOVE_CALLBACK @"__WXM_REMOVE_CALLBACK"
-#define WXM_SIGNAL_CACHE @"__WXM_SIGNAL_CACHE"
 
 #define WXMDEBUG DEBUG
 #define WXMPreventCrashBegin  @try {
@@ -39,20 +38,13 @@ typedef NS_ENUM(NSUInteger, WCRouterType) {
     WCRouterType_parameter,     /** 传参 */
 };
 
-///** 模块交互协议需要处理消息的遵循该协议  */
-//@protocol WXMComponentFeedBack <NSObject>
-//@optional
-//- (BOOL)wc_cacheImplementer;
-//- (nullable NSArray <WXM_SIGNAL>*)wc_signals;
-//- (void)wc_receiveParameters:(WXMParameterObject * _Nullable)obj;
-//- (void)wc_receivesSignalObject:(WXMSignal * _Nullable)obj;
-//@end
-
 /** Service协议 */
 @protocol WXMServiceFeedBack <NSObject>
-- (nullable WXMComponentError *)cacheDataSource;
-- (void)setServiceCallback:(ServiceCallBack _Nonnull )callback;
-- (void)sendNext:(WXMComponentError * _Nullable)response;
+@optional;
+@property (nonatomic, assign) BOOL accessCache;
+- (nullable WXMComponentError *)cacheComponentError;
+- (void)setServiceCallback:(ServiceCallBack _Nonnull)callback;
+- (void)sendNext:(WXMComponentError *_Nullable)response;
 @end
 
 #endif /* WXMComponentConfiguration_h */

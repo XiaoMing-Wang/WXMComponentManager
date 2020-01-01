@@ -12,8 +12,8 @@
 
 + (instancetype)error:(NSInteger)code message:(NSString *)message object:(id)object {
     WXMComponentError *error = [[WXMComponentError alloc] init];
-    error.code = code;
-    error.message = message;
+    error.errorCode = code;
+    error.errorMessage = message;
     error.object = object;
     error.success = (code == 0);
     return error;
