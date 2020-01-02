@@ -13,12 +13,6 @@ class NSObject; \
 char *k##procotol##_ser \
 WXMKitDATA(WXMModuleClass) = "{ \""#procotol"\" : \""#serviceInstance"\" }";
 
-/** 协议声明 */
-#define WC_PROTOCOL_STATEMENT(aProtocol) \
-class NSObject; \
-@protocol aProtocol \
-@end
-
 /** 快速定义信号 */
 #define __WCSIGNAL__(signal, describe) static WXM_SIGNAL const signal = (@#signal);
 
@@ -27,13 +21,19 @@ class NSObject; \
 #define WCMangerInstance [WXMComponentManager sharedInstance]
 #define WCSeiviceInstance [WXMComponentServiceManager sharedInstance]
 
-///** A-B界面获取参数和回调 */
-//#define WCBridgeParameter(target) WXMComponentBridge.parameter(target)
-//#define WCBridgeCallBack(target, parameter) WXMComponentBridge.callBackForward(target, parameter)
-
 /** 信号 */
 #define WCBridgeObserve(target, signal) WXMComponentBridge.observe(target, signal)
 #define WCBridgeSendSignal(signal, parameter) WXMComponentBridge.sendSignal(signal, parameter)
+
+///** 协议声明 */
+//#define WC_PROTOCOL_STATEMENT(aProtocol) \
+//class NSObject; \
+//@protocol aProtocol \
+//@end
+
+///** A-B界面获取参数和回调 */
+//#define WCBridgeParameter(target) WXMComponentBridge.parameter(target)
+//#define WCBridgeCallBack(target, parameter) WXMComponentBridge.callBackForward(target, parameter)
 
 /** Service */
 //#define WCService(protocols) \

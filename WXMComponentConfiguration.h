@@ -41,9 +41,10 @@ typedef NS_ENUM(NSUInteger, WCRouterType) {
 
 /** Service协议 */
 @protocol WXMServiceFeedBack <NSObject>
-- (nullable WXMComponentError *)cacheDataSource;
-- (void)setServiceCallback:(ServiceCallBack _Nonnull )callback;
-- (void)sendNext:(WXMComponentError * _Nullable)response;
+- (BOOL)accessCache;
+- (nullable WXMComponentError *)cacheComponentError;
+- (void)setServiceCallback:(ServiceCallBack _Nonnull)callback;
+- (void)sendNext:(WXMComponentError *_Nullable)response;
 @end
 
 #endif /* WXMComponentConfiguration_h */

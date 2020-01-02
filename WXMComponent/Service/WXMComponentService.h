@@ -11,7 +11,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WXMComponentService : NSObject <WXMServiceFeedBack>
+@interface WXMComponentService : NSObject 
+
+/** 是否优先返回缓存 */
+@property (nonatomic, assign) BOOL accessCache;
 
 @end
 
