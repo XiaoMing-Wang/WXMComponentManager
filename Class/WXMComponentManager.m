@@ -45,9 +45,7 @@
     if (!self.registeredDic) self.registeredDic = @{}.mutableCopy;
     if (!self.cacheTarget) self.cacheTarget = @{}.mutableCopy;
     if (service && protocol) [self.registeredDic setObject:service forKey:protocol];
-    if (WXMDEBUG) {
-        NSLog(@"%@ ----- %@", service, protocol);
-    }
+    if (WXMDEBUG) {  NSLog(@"%@ ----- %@", service, protocol); }
 }
 
 /* 获取service对象(服务调用者) */
@@ -105,8 +103,9 @@
     if (WXMDEBUG == NO) return;
     UIAlertController *aler = nil;
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
-    NSString * msg = [NSString stringWithFormat:@"协议:%@ 没有注册或类无法实例化",title];
-  
+    NSString *msg = [NSString stringWithFormat:@"协议:%@ 没有注册或类无法实例化",title];
+    NSLog(@"%@", msg);
+    
     aler = [UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:1];
     UIAlertAction *can = [UIAlertAction actionWithTitle:@"取消" style:1 handler:nil];
     [aler addAction:can];

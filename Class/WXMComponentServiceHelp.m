@@ -6,18 +6,18 @@
 //  Copyright © 2019 wq. All rights reserved.
 //
 #import <objc/runtime.h>
-#import "WXMComponentService.h"
+#import "WXMComponentBaseService.h"
 #import "WXMComponentManager.h"
 #import "WXMComponentConfiguration.h"
-#import "WXMComponentServiceManager.h"
-@interface WXMComponentServiceManager ()
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *>*serviceDictionary;
+#import "WXMComponentServiceHelp.h"
+@interface WXMComponentServiceHelp ()
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *serviceDictionary;
 @end
 
-@implementation WXMComponentServiceManager
+@implementation WXMComponentServiceHelp
 
 + (instancetype)sharedInstance {
-    static WXMComponentServiceManager *serviceManager;
+    static WXMComponentServiceHelp *serviceManager;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         serviceManager = [[self alloc] init];
@@ -29,10 +29,14 @@
 - (id)serviceProvide:(Protocol *)protocol depend:(id)depend {
     id service = [[WXMComponentManager sharedInstance] serviceProvideForProtocol:protocol];
     if (![service respondsToSelector:@selector(setServiceCallback:)]) return nil;
-    if (![service isKindOfClass:WXMComponentService.class]) return nil;
+    if (![service isKindOfClass:WXMComponentBaseService.class]) return nil;
     [self addService:service dependKey:[self dependKey:depend]];
     [self addFreeServiceCallBack:service];
+    
+    WXMPreventCrashBegin
     [self managerServicerDealloc:depend];
+    WXMPreventCrashEnd
+    
     return service;
 }
 
@@ -40,19 +44,19 @@
 - (id)serviceCacheProvide:(Protocol *)protocol {
     id service = [[WXMComponentManager sharedInstance] serviceCacheProvideForProtocol:protocol];
     if (![service respondsToSelector:@selector(setServiceCallback:)]) return nil;
-    if (![service isKindOfClass:WXMComponentService.class]) return nil;
+    if (![service isKindOfClass:WXMComponentBaseService.class]) return nil;
     return service;
 }
 
 /** 强引用 */
-- (void)addService:(WXMComponentService *)service dependKey:(NSString *)dependKey {
+- (void)addService:(WXMComponentBaseService *)service dependKey:(NSString *)dependKey {
     if (!service || !dependKey) return;
     if ([self exitService:service dependKey:dependKey]) return;
     @synchronized (self) {
         NSMutableArray *serviceArray = [self.serviceDictionary objectForKey:dependKey];
         serviceArray = serviceArray ? serviceArray.mutableCopy : @[].mutableCopy;
         [serviceArray addObject:service];
-        [self.serviceDictionary setObject:serviceArray forKey:dependKey];
+        [self.serviceDictionary setValue:serviceArray forKey:dependKey];
     }
 }
 
@@ -60,17 +64,18 @@
 - (void)managerServicerDealloc:(id)depend {
     WXMPreventCrashBegin
     
-    __block SEL serviceDeallocSEL = NSSelectorFromString(@"serviceDealloc");
+    SEL serviceDeallocSEL = NSSelectorFromString(@"serviceDealloc");
     if ([depend respondsToSelector:serviceDeallocSEL]) return;
     
     id serviceDealloc = ^(__unsafe_unretained id dependInstance) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if ([dependInstance respondsToSelector:serviceDeallocSEL] && dependInstance) {
+        __unsafe_unretained id self_instance = dependInstance;
+        if ([self_instance respondsToSelector:serviceDeallocSEL] && self_instance) {
             WXMPreventCrashBegin
-            [[WXMComponentServiceManager sharedInstance] freeServiceWithDepend:dependInstance];
-            [dependInstance performSelector:serviceDeallocSEL];
+            [[WXMComponentServiceHelp sharedInstance] freeServiceWithDepend:self_instance];
+            if (self_instance) [self_instance performSelector:serviceDeallocSEL];
             WXMPreventCrashEnd
         }
 #pragma clang diagnostic pop
@@ -85,19 +90,19 @@
 }
 
 /** 添加block */
-- (void)addFreeServiceCallBack:(WXMComponentService *)service {
-    FreeServiceCallBack serviceCallBack = ^(WXMComponentService *service) {
-        [[WXMComponentServiceManager sharedInstance] freeRetainService:service];
+- (void)addFreeServiceCallBack:(WXMComponentBaseService *)service {
+    FreeServiceCallBack serviceCallBack = ^(WXMComponentBaseService *service) {
+        [[WXMComponentServiceHelp sharedInstance] freeRetainService:service];
     };
     [service setValue:serviceCallBack forKey:WXM_REMOVE_CALLBACK];
 }
 
 /** 释放 */
-- (void)freeRetainService:(WXMComponentService *)service {
+- (void)freeRetainService:(WXMComponentBaseService *)service {
     if (!service) return;
     @synchronized (self) {
         [self.serviceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSMutableArray * _Nonnull serviceArray, BOOL * _Nonnull stop) {
-            for (WXMComponentService *cacheService in serviceArray.reverseObjectEnumerator) {
+            for (WXMComponentBaseService *cacheService in serviceArray.reverseObjectEnumerator) {
                 if (cacheService == service) [serviceArray removeObject:cacheService];
             }
         }];
@@ -109,18 +114,17 @@
     if (self.serviceDictionary.allKeys.count == 0 || !self.serviceDictionary) return;
     NSString *dependKey = [self dependKey:depend];
     if (!depend || !dependKey) return;
-    if ([self.serviceDictionary objectForKey:dependKey]) {
-        [self.serviceDictionary removeObjectForKey:dependKey];
-    }
+    [self.serviceDictionary setValue:nil forKey:dependKey];
+    
 }
 
 /** 是否存在当前service */
-- (BOOL)exitService:(WXMComponentService *)service dependKey:(NSString *)dependKey {
+- (BOOL)exitService:(WXMComponentBaseService *)service dependKey:(NSString *)dependKey {
     @synchronized (self) {
         NSMutableArray *serviceArray = [self.serviceDictionary objectForKey:dependKey];
         if (serviceArray.count == 0 || !serviceArray) return NO;
         if (![serviceArray isKindOfClass:NSArray.class]) return NO;
-        for (WXMComponentService *cacheService in serviceArray.reverseObjectEnumerator) {
+        for (WXMComponentBaseService *cacheService in serviceArray.reverseObjectEnumerator) {
             if (cacheService == service) return YES;
         }
     }

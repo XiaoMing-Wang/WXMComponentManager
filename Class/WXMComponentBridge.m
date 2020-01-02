@@ -10,56 +10,33 @@
 #import "WXMComponentBridge.h"
 #import "WXMComponentContext.h"
 
-/** static char parameterKey; */
-/** static char callbackKey; */
+static char parameterKey;
+static char callbackKey;
 static NSPointerArray *_allInstanceTarget;
-/** static NSMutableDictionary *_allObserveObject; */
 @implementation WXMComponentBridge
 
 + (void)load {
     if (!_allInstanceTarget) _allInstanceTarget = [NSPointerArray weakObjectsPointerArray];
-    /** if (!_allObserveObject) _allObserveObject = @{}.mutableCopy; */
 }
 
-//+ (void)handleParametersWithTarget:(id)target parameters:(id)parameter {
-//    if (!target || !parameter) return;
-//
-//    objc_AssociationPolicy policy = OBJC_ASSOCIATION_COPY_NONATOMIC;
-//    WXMParameterObject *parameterObject = [WXMParameterObject new];
-//    BOOL isDictionary = [parameter isKindOfClass:NSDictionary.class];
-//    if (isDictionary) {
-//        parameterObject.parameter = (NSDictionary *) parameter;
-//        objc_setAssociatedObject(target, &parameterKey, parameter, policy);
-//    } else {
-//        parameterObject.callback = (SignalCallBack) parameter;
-//        objc_setAssociatedObject(target, &callbackKey, parameter, policy);
-//    }
-//
-//    /** 代理回调 */
-//    if ([target respondsToSelector:@selector(wc_receiveParameters:)]) {
-//        [target wc_receiveParameters:parameterObject];
-//    }
-//}
++ (void)handleParametersWithTarget:(id)target parameters:(id)parameter {
+    if (!target || !parameter) return;
+    objc_AssociationPolicy policy = OBJC_ASSOCIATION_COPY_NONATOMIC;
+    BOOL isDictionary = [parameter isKindOfClass:NSDictionary.class];
+    if (isDictionary) objc_setAssociatedObject(target, &parameterKey, parameter, policy);
+    else objc_setAssociatedObject(target, &callbackKey, parameter, policy);
+}
 
-///** 获取路由传递下来的参数 */
-//+ (NSDictionary *)parameter:(id)target {
-//    return objc_getAssociatedObject(target, &parameterKey);
-//}
-//
-///** 路由调用时的回调 */
-//+ (void)sendNext:(id)target parameter:(NSDictionary * _Nullable)parameter {
-//    SignalCallBack callback = objc_getAssociatedObject(target, &callbackKey);
-//    if (callback) callback(parameter);
-//}
-//
-///** 跨界面传数据 */
-//+ (void)setObject:(id)object keyPath:(WXM_SIGNAL)keyPath {
-//    if (object && keyPath) [_allObserveObject setObject:object forKey:keyPath];
-//}
-//
-//+ (id)objectForKeyPath:(WXM_SIGNAL)keyPath {
-//    return [_allObserveObject objectForKey:keyPath];
-//}
+/** 获取路由传递下来的参数 */
++ (NSDictionary *)parameter:(id)target {
+    return objc_getAssociatedObject(target, &parameterKey);
+}
+
+/** 路由调用时的回调 */
++ (SignalCallBack)signalCallBack:(id)target {
+    SignalCallBack callback = objc_getAssociatedObject(target, &callbackKey);
+    return callback ?: nil;
+}
 
 #pragma mark _____________________________ 收发信号
 

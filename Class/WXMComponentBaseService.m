@@ -6,20 +6,21 @@
 //  Copyright © 2019 wq. All rights reserved.
 //
 #import "WXMComponentManager.h"
-#import "WXMComponentService.h"
-#import "WXMComponentServiceManager.h"
+#import "WXMComponentBaseService.h"
+#import "WXMComponentServiceHelp.h"
 
-@interface WXMComponentService ()
+@interface WXMComponentBaseService ()
 @property (nonatomic, strong) WXMComponentError *responseCache;
 @property (nonatomic, strong, readonly) ServiceCallBack serviceCallBack;
 @property (nonatomic, strong, readonly) FreeServiceCallBack freeServiceCallBack;
 @end
-@implementation WXMComponentService
+
+@implementation WXMComponentBaseService
 
 - (void)setServiceCallback:(ServiceCallBack)callback {
     
     _serviceCallBack = [callback copy];
-    if (_serviceCallBack == nil) return;
+    if (callback == nil) return;
     
     if (self.responseCache) {
         
@@ -29,12 +30,10 @@
         return;
     }
     
-    WXMComponentError *cacheComponentError = nil;
-    if ([self respondsToSelector:@selector(cacheComponentError)] &&
-        [self respondsToSelector:@selector(accessCache)]) {
-        BOOL accessCache = [self accessCache];
-        cacheComponentError = [self cacheComponentError];
-        if (cacheComponentError && accessCache) _serviceCallBack(cacheComponentError);
+    WXMComponentError *cacheMediatorError = nil;
+    if ([self respondsToSelector:@selector(cacheComponentError)] && self.accessCache) {
+        cacheMediatorError = self.cacheComponentError;
+        if (cacheMediatorError) _serviceCallBack(cacheMediatorError);
     }
 }
 
@@ -42,9 +41,9 @@
     if (self.serviceCallBack) {
         self.serviceCallBack(response);
         [self releaseServiceSelf];
-    } else {
-        self.responseCache = response;
     }
+    else if (response) self.responseCache = response;
+    else [self releaseServiceSelf];
 }
 
 /** 释放service */

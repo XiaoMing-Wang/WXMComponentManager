@@ -19,14 +19,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL success;
 
 /** 错误码 */
-@property (nonatomic, assign) NSInteger code;
+@property (nonatomic, assign) NSInteger errorCode;
 
 /** 错误信息 */
-@property (nonatomic, strong) NSString *message;
+@property (nonatomic, strong) NSString *errorMessage;
 
 /** object */
 @property (nonatomic, strong) id object;
 
+/** 初始化 */
 + (instancetype)error:(NSInteger)code message:(NSString *)message object:(id)object;
 
 @end
