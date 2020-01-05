@@ -5,7 +5,7 @@
 //  Created by wq on 2019/4/20.
 //  Copyright © 2019年 wq. All rights reserved.
 
-/** 使用该宏注册协议 */
+/** 注册协议 */
 #define WCKitService(serviceInstance, procotol) \
 class NSObject; \
 char *k##procotol##_ser \
