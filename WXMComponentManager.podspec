@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "WXMComponentManager" 
-  s.version      = "1.4.0"
+  s.version      = "1.4.1"
   s.license      = "MIT"
   s.summary      = "组件中间层"
 
