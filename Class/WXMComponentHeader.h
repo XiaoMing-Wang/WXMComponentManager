@@ -17,8 +17,8 @@ class NSObject; \
 static WXM_SIGNAL const signal = (@#signal);
 
 /** 单例 */
-#define WCRouterInstance [WXMComponentRouter sharedInstance]
-#define WCMangerInstance [WXMComponentManager sharedInstance]
+#define WCRouterInstance  [WXMComponentRouter sharedInstance]
+#define WCMangerInstance  [WXMComponentManager sharedInstance]
 #define WCSeiviceInstance [WXMComponentServiceHelp sharedInstance]
 
 /** 信号 */
@@ -28,15 +28,14 @@ static WXM_SIGNAL const signal = (@#signal);
 /** Service */
 #define WCService(aString) [WCSeiviceInstance serviceProvide:@protocol(aString) depend:self];
 
-/** WCError */
-#define WCError(code, message, object) [WXMComponentError error:code message:message object:object];
+/** Error */
+#define WCError(code, msg, obj) [WXMComponentError error:code message:msg object:obj];
 
 #import "WXMComponentBridge.h"
 #import "WXMComponentRouter.h"
 #import "WXMComponentManager.h"
 #import "WXMComponentContext.h"
 
-#import "WXMComponentError.h"
 #import "WXMComponentData.h"
 #import "WXMComponentAnnotation.h"
 #import "WXMComponentConfiguration.h"

@@ -58,7 +58,7 @@
 /** 删除当前对象同名信号 */
 - (void)removeSameSignal {
     NSDictionary *listens = objc_getAssociatedObject(self.target, WXM_SIGNAL_KEY);
-    NSMutableDictionary *dictionaryM  = listens ? listens.mutableCopy : @{}.mutableCopy;
+    NSMutableDictionary *dictionaryM = listens ? listens.mutableCopy : @{}.mutableCopy;
     [dictionaryM setValue:nil forKey:self.signal];
     objc_setAssociatedObject(self.target, WXM_SIGNAL_KEY, dictionaryM, 1);
 }
@@ -91,7 +91,6 @@
 }
 
 @end
-
 
 #pragma mark WXMSignalDisposable
 

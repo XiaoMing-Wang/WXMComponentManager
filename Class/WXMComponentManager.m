@@ -104,8 +104,6 @@
     UIAlertController *aler = nil;
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     NSString *msg = [NSString stringWithFormat:@"协议:%@ 没有注册或类无法实例化",title];
-    NSLog(@"%@", msg);
-    
     aler = [UIAlertController alertControllerWithTitle:@"提示"message:msg preferredStyle:1];
     UIAlertAction *can = [UIAlertAction actionWithTitle:@"取消" style:1 handler:nil];
     [aler addAction:can];
